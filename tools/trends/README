@@ -1,0 +1,14 @@
+Name:           Google Hot Trends Atom Scraper
+URL:            http://www.fromzerotoseo.com/coding/
+Last updated:   May 14, 2009
+License:        No license needed
+
+Installation:
+
+1. Import database "sql/trends.sql".
+2. Configure parameters "share/config.php":
+    1) Database address DB_ADDR, default "localhost".
+    2) Login DB_USER, default "root".
+    3) Password DB_PSWD, default "".
+    4) Database name DB_NAME, default "trends".
+3. Set up an hourly cron job "cron/cron.php".

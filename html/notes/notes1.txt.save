@@ -1,0 +1,83 @@
+chrt -- allow a process to run in real time
+
+user space vs kernel space
+kernel is a resource manager.. anything kernel does is overhead..
+kernel is an open space.. anyone can access any block... basically a bunch of tables and methods.
+
+
+
+	system context, process context
+___________________________________________
+
+the interrupt does not run in context of any process, it happens in the kernel space.. 
+
+tickless kernels..
+
+linux kernels:
+written in c, no floating piont, kernel pre-emption is pre-emption at well-defined locatinos.
+
+http://kernel.org/ download 3.7.2
+Modules:
+additional kernel capability
+- extending kernel functionality
+- dynamocally at runtime..
+
+Device Drivers:
+s a computer program that operates or controls a particular type of device that is attached to a computer
+..
+
+
+Kernel capa
+
+kernels up
+chapter 5
+synchronization
+hyper-threading,
+semaphores, concurrency, thread-locks.
+
+chapter 2
+building and running modules
+building a kernel
+building and running modules
+
+
+chapter 6
+
+chapter 7: notion of time. hertz ratings.. calc time.
+
+chapter 8: memory.. huge possibilities..memory allocations..
+
+chapter 9: hardware .. how do those devices be able with respect be to kernels.
+
+chapter 10:
+
+chpter 11: portabilitiy.. 
+
+chapter 12: PCI
+
+chap 13: USB
+
+
+
+***********************
+obj-m := $(OBJ).o  #compile as a module.
+obj -j  .. compile natively
+
+
+CC compiles hello.c into hello.o, 
+CC compiles hello.mod.o
+LD makes hello.mod.o, hello.o into hello.ko
+
+
+
+insmod
+rmmod
+lsmod
+modprob
+
+
+EXPORT_SYMBOL(sub_doprintk).. exporting symbol 
+use static keyword in front of functions to avoid namespace polution
+
+cat /proc/kallsysms |grep sub_do
+tail /var

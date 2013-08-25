@@ -1,0 +1,65 @@
+<?php
+require_once("/var/www/lib/functions.php");
+
+$mac=$_GET['mac'];
+$idfa=$_GET['idfa'];
+$cb=$_GET['cb'];
+$user=db::row("select * from appuser where app='$cb' and mac='$mac'");
+$newuser=0;
+error_log("select * from appuser where app='$cb' and mac='$mac'");
+if(!$user){
+ $newuser=1;
+  db::exec("insert into appuser set app='$cb', mac='$mac',created=now(),modified=now(),idfa='$idfa'");
+  $user=db::row("select * from appuser where app='$cb' and mac='$mac'");
+}else{
+ $uid=$user['id'];
+ db::exec("update appuser set modified=now(), visit_count=visit_count+1,idfa='$idfa' where id=$uid");
+}
+
+$config=array("um"=>"n","mac"=>$mac);
+$config['xp']=$user['xp'];
+$config['uid']=$user['id'];
+$config['stars']=$user['stars'];
+$config['fbid']=$user['fbid'];
+if($cb=="stockalerts"){
+        $appredeem="http://d1.appredeem.com/redeem.php?mac_addr=".md5($mac)."&appid=642101022&ssk=2bad6eb88db3c8aa96578f365c733d66";
+        exec("curl '$appredeem' > /dev/null 2>&1 &");
+	$ua=$_SERVER['HTTP_USER_AGENT'];
+	if(strpos($ua,"stockalerts")!==false){
+                $config['gm']="Login with Facebook to earn 50 Appdog Bones which you can use to redeem for Amazon Giftcards, iTunes Giftcard or PayPal Cash.\n\nClick 'OK' to visit appdog.com.";
+                $config['gmtitle']="FREE $0.50 Amazon Giftcard, PayPal Cash or iTunes Giftcard.";
+                $config['gmurl']="https://m.appdog.com/m/enroll.jsp?cb=".$_GET['cb']."&idfa=".$idfa."&mac=".$_GET['mac']."&mfraid=9122847575669700870&mfrzid=9135311512939093920&country_code=us&mfssaid=$uid";
+	}
+}
+if($cb=="projectilefree"){
+  $w3i="http://api.w3i.com/PublicServices/MobileTrackingApiRestV1.svc/AppWasRunV2?AppId=13713&IOSSha1HashedMac=".md5($mac)."&iOSIDFA=$idfa&clientIp=";
+  exec("curl '$w3i' > /dev/null 2>&1 &");
+ error_log($w3i);
+}
+if($cb=="picrewardsdev" || $cb=="picrewards"){
+ require_once("/var/www/html/levels");
+ $nickname=$user['username'];
+ if($nickname==''){
+   $nickname=db::row("select * from available_nicknames where uid=0 and taken=0 order by rand() limit 1");
+   $uname=$nickname['nickname'];
+   db::exec("update available_nicknames set taken=1, uid=$uid where nickname='$uname'");
+   db::exec("update appuser set username='$uname' where id=$uid");
+   $nickname=$uname;
+ }
+ $config['nickname']=$nickname;
+ $config['tweetmsg']="Enter my bonus code '$nickname' for 20-50 points!";
+ $config['fbcaption']="Upload Pictures; Earn Free Rewards";
+ $config=array_merge($config,$xpinfo);
+ $xpinfo=getBonusPoints($user['xp']);
+ $maxbonus=$xpinfo['maxbonus'];
+ $ret=$xpinfo;
+
+$longmsg="Download #PhotoRewards from the AppStore and enter my bonus code '$username' for up to $maxbonus! Bonus Points.\nPoints can be redeemed for Amazon.com, Starbucks, iTunes, Hulu Plus giftcards or PayPal Cash!";
+$longmsg.=" http://www.json999.com/redirect.php?uid=$uid";
+$ret['tweetmsg']="Download #PhotoRewards from the AppStore and enter my bonus code '$username' for up to $maxbonus!";
+$ret['emailmsg']=$longmsg;
+$ret['fbmsg']=$longmsg;
+$ret['redirect']="http://www.json999.com/redirect.php?uid=$uid";
+
+}
+die(json_encode($config));

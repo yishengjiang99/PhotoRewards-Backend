@@ -1,0 +1,69 @@
+<?php
+require_once("/var/www/lib/functions.php");
+//if($_GET['pw']!="dafhfadsfkdsadlds") die(0);
+$appid=intval($_GET['appid']);
+$uid=intval($_GET['uid']);
+$points=intval($_GET['amount'])*10;
+
+$token=db::row("select a.token from pushtokens a join appuser b on a.mac_address=b.mac where b.id=$uid and a.app='picrewards'");
+$tokenstr=$token['token'];
+db::exec("insert ignore into sponsored_app_installs set uid=$uid, Amount=$points, appid=$appid, created=now()");
+$installid=db::lastID();
+
+$appstr=file_get_contents("http://json999.com/appmeta.php?appid=$appid");
+$app=json_decode($appstr,1);
+$appname=$app['Name'];
+$message="Thanks for trying $appname! Share a screenshot on Picture Rewards!";
+$msg="Thanks for trying $appname. Upload a picture for $points points";
+$deviceToken=$tokenstr;
+echo $tokenstr;
+echo $message;
+echo "<br>".$msg;
+$passphrase='prpr';
+
+
+// Put your alert message here:
+
+////////////////////////////////////////////////////////////////////////////////
+
+$ctx = stream_context_create();
+stream_context_set_option($ctx, 'ssl', 'local_cert', '/var/www/tools/PRDevCertKey.pem');
+stream_context_set_option($ctx, 'ssl', 'passphrase', $passphrase);
+// Open a connection to the APNS server
+$fp = stream_socket_client(
+	'ssl://gateway.sandbox.push.apple.com:2195', $err,
+	$errstr, 60, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $ctx);
+
+if (!$fp)
+	exit("Failed to connect: $err $errstr" . PHP_EOL);
+
+echo 'Connected to APNS' . PHP_EOL;
+
+// Create the payload body
+$body['aps'] = array(
+	'alert' => $message,
+	'sound' => 'default',
+	'custom_key1'=>'hi',
+	'storeId'=>$appid."",
+ 	'refId'=>$installid,
+  	'msg'=>$msg,
+// 	'url'=>"http://www.google.com",
+	);
+
+// Encode the payload as JSON
+$payload = json_encode($body);
+
+// Build the binary notification
+$msg = chr(0) . pack('n', 32) . pack('H*', $deviceToken) . pack('n', strlen($payload)) . $payload;
+
+// Send it to the server
+$result = fwrite($fp, $msg, strlen($msg));
+echo $result;
+if (!$result)
+	echo 'Message not delivered' . PHP_EOL;
+else
+	echo 'Message successfully delivered' . PHP_EOL;
+
+// Close the connection to the server
+fclose($fp);
+

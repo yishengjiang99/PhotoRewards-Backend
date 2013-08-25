@@ -1,0 +1,22 @@
+<?php
+        $url="http://www.xoxohth.com/main.php?forum_id=2";
+ 	$ch=curl_init();
+        curl_setopt($ch,CURLOPT_URL,$url);
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
+        curl_setopt($ch, CURLOPT_COOKIE, "mode=1");
+        $ret=curl_exec($ch);
+        $html=str_replace("imgs", "http://www.xoxohth.com/imgs",$ret);
+	echo $html;
+?>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.js"> </script>
+
+<script>
+$(document).ready(function(){
+  $('[style="word-break: break-all;"]').each(function(){
+    $(this).append();
+  });
+})
+</script>
+</html>
+
+

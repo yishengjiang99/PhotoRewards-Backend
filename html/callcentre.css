@@ -1,0 +1,115 @@
+@charset "utf-8";
+
+.contactText {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 14px;
+	color: #333;
+	height: 160px;
+	width: 750px;
+	border: 1px solid #999;
+}
+.Fields {
+	border: 1px solid #999;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 14px;
+	color: #333;
+}
+
+/* CSS Document */
+
+#wrapper {
+	width: 980px;
+	margin: 0 auto;
+	position: relative;
+}
+#header {
+	background-image: url(images/1.jpg);
+	background-repeat: no-repeat;
+	height: 145px;
+	width: 980px;
+}
+#flash {
+	background-image: url(images/flash_bg.gif);
+	background-repeat: no-repeat;
+	height: 352px;
+	width: 980px;
+}
+#aboutBg {
+	background-image: url(images/about_mainbg.gif);
+	background-repeat: no-repeat;
+	height: 987px;
+	width: 980px;
+}
+#careersBg {
+	background-image: url(images/careers_mainBG.gif);
+	background-repeat: no-repeat;
+	/* height:595px;*/
+	height: 655px;
+	width: 980px;
+}
+#loginBG {
+	background-image: url(images/login_mainBG.gif);
+	background-repeat: no-repeat;
+	height: 468px;
+	width: 980px;
+}
+.loginField {
+	font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+	height: 43px;
+	width: 240px;
+	font-size: 24px;
+	color: #FFF;
+	background-color: #0F297F;
+	border-top-style: none;
+	border-right-style: none;
+	border-bottom-style: none;
+	border-left-style: none;
+	text-align: center;
+}
+
+
+.searchbar {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	color: #666;
+	height: 20px;
+	width: 165px;
+	border-top-style: none;
+	border-right-style: none;
+	border-bottom-style: none;
+	border-left-style: none;
+	text-align: center;
+}
+#home_textbg {
+	background-image: url(images/home_textbg.gif);
+	background-repeat: no-repeat;
+	height: 407px;
+	width: 980px;
+}
+.forgotPass {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	color: #FFF;
+}
+
+.bodycopy {
+	font-family: Verdana, Geneva, sans-serif;
+	font-size: 14px;
+	color: #7c7c7c;
+	text-align: justify;
+}
+.bodycopyTight {
+	font-family: Verdana, Geneva, sans-serif;
+	font-size: 14px;
+	color: #7c7c7c;
+	text-align: justify;
+	line-height: 18px;
+
+
+.contactText {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 14px;
+	color: #134F59;
+	height: 170px;
+	width: 900px;
+}

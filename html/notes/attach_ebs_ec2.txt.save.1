@@ -1,0 +1,38 @@
+
+http://www.webmastersessions.com/how-to-attach-ebs-volume-to-amazon-ec2-instance
+1. start ec2, start ebs, attach ebs to volume
+2. dmesg |grep "unknown partition table"
+3.  mkfs.ext3 /dev/xvdf
+3b create from snapshot: mount /dev/xvdf /data
+4. echo "/dev/xvdf   /data	ext4 noatime 0 0" >> /etc/fstab
+
+5. mount /data
+
+***mysql
+yum install mysql
+yum install mysql-server
+yum install mysql-devel 
+edit /etc/my.cnf "datadir=/data"
+service mysqld start
+
+
+***** start replication **
+
+1. on master: 
+edit "/etc/my.conf"
+	server-id=1
+	log_bin                        = /var/lib/mysql/mysql-bin	
+	log-bin=/var/lib/mysql/mysql-bin
+1. on slave:
+edit /etc/my.conf
+	server-id=2
+	relay-log=mysqld-relay-bin
+
+2. service mysql restart
+
+3. on master:
+create user 'tubularlabs'@'%.%' identified by 'lUbxxxxx';
+grant replication slave on *.* to 'tubularlabs'@'%.%.com'
+
+show master status;
+| mysql-bin.000001 | 396636103 | 

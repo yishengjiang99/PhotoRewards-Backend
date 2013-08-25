@@ -1,0 +1,26 @@
+<?
+$ctx = stream_context_create();
+stream_context_set_option($ctx, 'ssl', 'local_cert', '/var/www/tools/PRProdCertKey.pem');
+stream_context_set_option($ctx, 'ssl', 'passphrase', 'prpr');
+
+// Open a connection to the APNS server
+$fp = stream_socket_client(
+        'ssl://gateway.push.apple.com:2195', $err,
+        $errstr, 60, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $ctx);
+    $apns = stream_socket_client('ssl://feedback.push.apple.com:2196', $errcode, $errstr, 60, STREAM_CLIENT_CONNECT, $ctx);
+    if(!$apns) {
+        echo "ERROR $errcode: $errstr\n";
+        return;
+    }
+
+
+    $feedback_tokens = array();
+    //and read the data on the connection:
+    while(!feof($apns)) {
+        $data = fread($apns, 38);
+        if(strlen($data)) {
+            $t=unpack("N1timestamp/n1length/H*devtoken", $data);
+echo "\n".json_encode($t);
+        }
+    }
+    fclose($apns);

@@ -1,0 +1,2 @@
+select post.author, count(1) as pc, sum(if(post.pid=thread.op,1,0)) as tc, sum(if(post.pid=thread.op,1,0))/count(1) as poast_thread_ratio, sum(if(post.author=opp.author,1,0)) as replied_own, sum(if(post.author=opp.author,1,0))/count(1) as percent_own_thread from post, thread, post opp where post.tid=thread.tid and opp.pid=thread.op group by post.author having pc > 100 order by percent_own_thread desc ;
+

@@ -1,0 +1,67 @@
+<?php
+require_once("/var/www/lib/functions.php");
+//if($_GET['pw']!="dafhfadsfkdsadlds") die(0);
+$appid=intval($_GET['appid']);
+$uid=intval($_GET['uid']);
+$points=intval($_GET['amount'])*10;
+
+$token=db::row("select a.token from pushtokens a join appuser b on a.mac_address=b.mac where b.id=$uid and a.app='picrewards'");
+echo "select a.token from pushtokens a join appuser b on a.mac_address=b.mac where b.id=$uid and a.app='picrewards'";
+$tokenstr=$token['token'];
+db::exec("insert into sponsored_app_installs set uid=$uid, Amount=$points, appid=$appid, created=now()");
+$installid=db::lastID();
+file_get_contents("http://json999.com/appmeta.php?appid=$appid");
+$sql="select 'DoneApp' as OfferType, s.appid as refId, a.id as StoreID, a.Name, a.RedirectURL, a.IconURL,s.amount as Amount, 1 as canUpload from sponsored_app_installs s join apps a on s.appid=a.id and s.id=$installid";
+$install=db::row($sql);
+$appname=$install['Name'];
+$message="Thanks for trying $appname. Be sure to take a screenshot and share it on Picture Rewards";
+$msg="Thanks for trying $appname. Upload a picture for $points points";
+$deviceToken=$tokenstr;
+echo $devicetoken;
+echo $message;
+$passphrase='prpr';
+// Put your alert message here:
+
+////////////////////////////////////////////////////////////////////////////////
+
+$ctx = stream_context_create();
+stream_context_set_option($ctx, 'ssl', 'local_cert', '/var/www/tools/PRDevCertKey.pem');
+stream_context_set_option($ctx, 'ssl', 'passphrase', $passphrase);
+// Open a connection to the APNS server
+$fp = stream_socket_client(
+	'ssl://gateway.sandbox.push.apple.com:2195', $err,
+	$errstr, 60, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $ctx);
+
+if (!$fp)
+	exit("Failed to connect: $err $errstr" . PHP_EOL);
+
+echo 'Connected to APNS' . PHP_EOL;
+
+// Create the payload body
+$body['aps'] = array(
+	'alert' => $message,
+	'sound' => 'default',
+	'custom_key1'=>'hi',
+	'storeId'=>$appid."",
+ 	'refId'=>$installid,
+  	'msg'=>$msg,
+// 	'url'=>"http://www.google.com",
+	);
+
+// Encode the payload as JSON
+$payload = json_encode($body);
+
+// Build the binary notification
+$msg = chr(0) . pack('n', 32) . pack('H*', $deviceToken) . pack('n', strlen($payload)) . $payload;
+
+// Send it to the server
+$result = fwrite($fp, $msg, strlen($msg));
+echo $result;
+if (!$result)
+	echo 'Message not delivered' . PHP_EOL;
+else
+	echo 'Message successfully delivered' . PHP_EOL;
+
+// Close the connection to the server
+fclose($fp
+

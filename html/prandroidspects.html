@@ -1,0 +1,104 @@
+<html>
+<body>
+<pre>1. at app launch, call https://www.json999.com/checkin.php?cb=apr&imei=[IMEI]&serial=[serial_number]&androidId=[androidId]&osVersion=[osVersion]
+    return JSON:
+{'uid':12345,'points':0,'xp':22,username:"username1"}
+
+2. call app list:
+https://www.json999.com/pr/offers.php?platform=android&uid=12345
+return json:
+{offers:[offer1,offer2]}
+offer1:Action,Name,canUpload,Amount,RedirectURL,IconURL,offerID,hint,Type
+First page:
+http://json999.com/img/s1-1136.png
+
+
+
+3. app details page:
+http://json999.com/pr/uploads/f724052392b7bfbb6d170c658c5a5e1f.jpeg
+Onclick "uploaded":
+var refId=offer.offerID;
+var type=offer.Type;
+var id=global.uid;
+if (canUpload==1) upload_picture(refId);
+if (canUpload==0) 
+ $.get("http://www.json999.com/pr/canupload.php?uid=1234&refID=offerID",
+   function(ret){
+     if(ret=="no") alert("You must try the app and take a screenshot from within the app");
+     else{
+ 	refId=ret;
+ 	upload_picture(refId);
+	}
+   });
+
+uploading picture:
+
+call: http://json999.com/pr/uploadPicture.php?uid=5656&type=jpeg&refId=1472&otype=DoneApp
+return: [points earned]|[filename]|[endpoint]|[message]
+for example:
+10|7b9a7ad802168ddebdf03694b4063ee0.jpeg|http://www.json999.com/pr/postPicture.php|you earned 10 points!
+1. post the image to:
+$points=10;
+$endpoint="http://www.json999.com/pr/postPicture.php"
+$filename="7b9a7ad802168ddebdf03694b4063ee0.jpeg";
+$msg="you earned 10 points!";
+2. update the user points by $points on the header div
+3. display the $msg in a popup
+4. file uploading (this is what i use on iOS, use something compatiable with Android)
+
+       NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init] ;
+        [request setURL:[NSURL URLWithString:urlString]];
+        [request setHTTPMethod:@"POST"];
+        NSString *boundary = @"---------------------------14737809831466499882746641449";
+        NSString *contentType = [NSString stringWithFormat:@"multipart/form-data; boundary=%@",boundary];
+        [request addValue:contentType forHTTPHeaderField: @"Content-Type"];
+
+        NSMutableData *body = [NSMutableData data];
+        [body appendData:[[NSString stringWithFormat:@"\r\n--%@\r\n",boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"filenames\"\r\n\r\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[filename dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[[NSString stringWithFormat:@"\r\n--%@\r\n",boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+
+        [body appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"userfile\"; filename=\"%@\"\r\n", filename]
+                          dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[@"Content-Type: application/octet-stream\r\n\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[NSData dataWithData:imageData]];
+        [body appendData:[[NSString stringWithFormat:@"\r\n--%@--\r\n",boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+
+        [request setHTTPBody:body];
+        [NSURLConnection sendAsynchronousRequest:request
+                                            queue:[[NSOperationQueue alloc] init]
+                               completionHandler:^(NSURLResponse *response, NSData *data, NSError *error){}];
+ 
+
+
+Rewards Tab:
+http://json999.com/img/s2-1136.png
+
+JSON:
+http://json999.com/rewards.php
+[reward1, reward2]
+reward1:id,name,Points,Description,postext,Img
+
+user tabs on reward, show popup to confirm using the text in postext:
+http://json999.com/pr/uploads/800b9f10f84d9ac71f6ea04a90c9d151.jpeg
+
+if requiresEmail==1:
+having an input field to let the user input the email address
+
+if user clicks ok:
+
+http post to
+http://www.json99.com/redeem.php
+with POST parameters:
+giftID=offer.id
+uid=global.uid
+email=email
+
+the POST to redeem.php will return:
+{title:"you win", msg:"here's the giftcard code sdjsfasdfk"}
+just display a popupt showing title,msg
+
+</pre>
+</body>
+</html>

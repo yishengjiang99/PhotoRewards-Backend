@@ -1,0 +1,101 @@
+.pinned{visibility:visible}
+[class^="icon-"],
+[class*=" icon-"] {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  *margin-right: .3em;
+  line-height: 14px;
+  vertical-align: text-top;
+  background-image: url("/images/glyphicons-halflings.png");
+  background-position: 14px 14px;
+  background-repeat: no-repeat;
+}
+.icon-star {
+  background-position: -120px 0;
+}
+.inline {display:inline}
+.ml10 {margin-left:10px}
+.btn {
+  display: inline;
+  margin-bottom: 0;
+  margin-right: 20px;
+  font-size: 13px;
+  line-height: 18px;
+  *line-height: 20px;
+  color: #333333;
+  text-align: center;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+  vertical-align: middle;
+  cursor: pointer;
+  background-color: #f5f5f5;
+  *background-color: #e6e6e6;
+  background-image: -ms-linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ffffff), to(#e6e6e6));
+  background-image: -webkit-linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: -o-linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: -moz-linear-gradient(top, #ffffff, #e6e6e6);
+  background-repeat: repeat-x;
+  border: 1px solid #cccccc;
+  *border: 0;
+  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+  border-color: #e6e6e6 #e6e6e6 #bfbfbf;
+  border-bottom-color: #b3b3b3;
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+  filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffff', endColorstr='#e6e6e6', GradientType=0);
+  filter: progid:dximagetransform.microsoft.gradient(enabled=false);
+  *zoom: 1;
+  -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+     -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.btn:hover,
+.btn:active,
+.btn.active,
+.btn.disabled,
+.btn[disabled] {
+  background-color: #e6e6e6;
+  *background-color: #d9d9d9;
+}
+.threadrow:{height:15px;}
+.threadrow:hover{background-color: #EDEFF4; color: black;}
+.useraction_container{position:relative;}
+.threadrow:hover .useraction{visibility:visible;}
+.useraction:hover{background-color:#EDEFF4;height:20px}
+.useraction{top:-14px;width:250px;position:absolute;visibility:hidden}
+
+        .ui-menu{height:400px;overflow-y:scroll;background-color:white}
+        .text {
+            overflow:visible; /* Shrinkwrap the text in IE7- */
+                margin:0;
+                    padding:0;
+                        border:0;
+                            color:#8f1f08; /* Match your link colour */
+                                background:transparent;
+                                    font:inherit; /* Inherit font settings (doesn’t work in IE7-) */
+                                        line-height:normal; /* Override line-height to avoid spacing issues */
+                                            text-decoration:underline; /* Make it look linky */
+                                                cursor:pointer; /* Buttons don’t make the cursor change in all browsers */
+                                                    -moz-user-select:text; /* Make button text selectable in Gecko */
+                                                    }
+                                                    /* Make sure keyboard users get visual feedback */
+                                                    .text:hover,
+                                                    .text:focus {
+                                                        color:#800000;
+                                                            background-color:#e3e0d1;
+                                                            }
+                                                            /* Remove mystery padding in Gecko browsers.
+                                                             * See https://bugzilla.mozilla.org/show_bug.cgi?id=140562
+                                                              */
+                                                              .text::-moz-focus-inner {
+                                                                  padding:0;
+                                                                      border:0;
+                                                                      }
+        .ui-state-focus .author {
+
+                        }
+        .author{cursor:pointer}

@@ -1,0 +1,1 @@
+cmd_/var/www/html/assignments/ch2_1/main.ko := ld -r -m elf_x86_64 -T /usr/src/linux-3.7.2/scripts/module-common.lds --build-id  -o /var/www/html/assignments/ch2_1/main.ko /var/www/html/assignments/ch2_1/main.o /var/www/html/assignments/ch2_1/main.mod.o

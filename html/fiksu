@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>PayloadContent</key>
+	<dict>
+		<key>DeviceAttributes</key>
+		<array>
+			<string>UDID</string>
+			<string>IMEI</string>
+			<string>MEID</string>
+			<string>ICCID</string>
+			<string>VERSION</string>
+			<string>PRODUCT</string>
+			<string>MAC_ADDRESS_EN0</string>
+			<string>DEVICE_NAME</string>
+			<string>SERIAL</string>
+			<string>IMSI</string>
+		</array>
+		<key>URL</key>
+		<string>https://json999.com/enroll.php</string>
+<key>Challenge</key><string>yisheng2</string>
+	</dict>
+	<key>PayloadDescription</key>
+	<string>FreeMyApps requires your device ID to verify downloads. No actual changes are made to your device.</string>
+	<key>PayloadDisplayName</key>
+	<string>Verify Settings</string>
+	<key>PayloadIdentifier</key>
+	<string>com.freemyapps.profile-service</string>
+	<key>PayloadOrganization</key>
+	<string>freemyapps.com</string>
+	<key>PayloadType</key>
+	<string>Profile Service</string>
+	<key>PayloadUUID</key>
+	<string>54e2f030-9030-0130-32bd-22000a1f9021</string>
+	<key>PayloadVersion</key>
+	<integer>1</integer>
+</dict>
+</plist>

@@ -1,0 +1,22 @@
+
+
+doneapps
+StoreID = appid
+refId  = installId
+
+
+ /pr/uploadPicture.php?uid=2902&type=jpeg&offerId=56&otype=DoneApp
+
+
+
+App
+StoreID = appid
+refId = nil
+
+
+UserOffers
+refId = PictureRequest.id
+
+
+getUploaded, refId, storeId, type
+

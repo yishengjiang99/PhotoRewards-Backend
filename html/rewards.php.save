@@ -1,0 +1,12 @@
+<?php
+require_once("/var/www/lib/functions.php");
+$uid=$_GET['uid'];
+$user=db::row("select * from appuser where id=$uid");
+
+$rows=db::rows("select * from rewards order by Type='iap' desc, Points asc");
+foreach($rows as &$r){
+ if($r['available']==0 && $uid!=2902) continue;
+ if($r['type']=='gc') $r['postext']=$r['postext']."\n\rGift Card code will be available instantly and recorded under 'My Account' -> 'History'";
+ 
+}
+die(json_encode($rows));

@@ -1,0 +1,1 @@
+cmd_/var/www/html/Chapter_02/Examples/4/sub.ko := ld -r -m elf_x86_64 -T /usr/src/linux-3.7.2/scripts/module-common.lds --build-id  -o /var/www/html/Chapter_02/Examples/4/sub.ko /var/www/html/Chapter_02/Examples/4/sub.o /var/www/html/Chapter_02/Examples/4/sub.mod.o
