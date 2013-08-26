@@ -46,7 +46,10 @@ else{
  db::exec("update PictureRequest set description='$description', url='$url' where id=$offerId");
  $sms=$_GET['sms'];
  $email=$_GET['email'];
- 
+ if($sms && $sms!=''){
+   db::exec("update appuser set sms='$sms' where id=$uid limit 1");
+ } 
+
  $ret=array("title"=>"All Done","msg"=>"We will review this listing ASAP.");
 }
 

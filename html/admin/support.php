@@ -32,8 +32,7 @@ echo "<td valign=top>
 canned responses:
 <pre>
 Q: I don't get points/app won't let me upload picture
-A: It takes a while for us to receive confirmation from the advertiser that you've tried the app.
-Play it some more. We will msg you as soon as we hear back from them.
+A: It takes a while for us to receive confirmation from the advertiser that you've tried the app.\nWe will msg you as soon as we hear back from them. Meanwhile try other apps
 
 Q: How do I get my bonus code
 A: click on 'invite friends' on the first tab

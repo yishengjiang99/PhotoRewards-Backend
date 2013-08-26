@@ -1,4 +1,5 @@
 <?php
+die('nooo');
 if(!isset($_POST['login'])){
 $ch = curl_init();
 $cookiejar=time()+rand(0,1000);

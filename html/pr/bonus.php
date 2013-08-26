@@ -32,7 +32,7 @@ $min=$agentXpinfo['minbonus'];
 $max=$agentXpinfo['maxbonus'];
 $bonus=$min;
 for(;$bonus<=$max;$bonus++){
-  if(rand(0,20)<2) break; 
+  if(rand(0,40)<2) break; 
 }
 $agentUid=$agent['id'];
 $joinerUid=$user['id'];
@@ -41,7 +41,7 @@ error_log("select count(distinct(ipAddress)) as ips, avg(ltv), count(1) as cnt f
 $distIps=$arefs['ips'];
 
 $joiners=$arefs['cnt'];
-$points_to_joineer=intval($bonus/3);
+$points_to_joineer=intval($bonus/2);
 if($joiners>6 && $joiners/$distIps>2.4 && $arefs['avgltv']<2.0){
   die(json_encode(array("title"=>"Sorry","msg"=>"Bonus code hit daily limit")));
 }

@@ -10,4 +10,4 @@ $cc=$r['complaint'];
 error_log("update UploadPictures set reviewed=-1 where id='$pid'");
 db::exec("update UploadPictures set reviewed=-1 where id='$pid'");
 
-die(json_encode(array("title"=>"Thanks","msg"=>"Please click on the picture to complete your report.")));
+die(json_encode(array("title"=>"Thanks","msg"=>"Your report has been set to the Information Safety Committee")));

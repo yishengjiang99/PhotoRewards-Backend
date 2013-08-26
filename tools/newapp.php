@@ -1,5 +1,6 @@
 <?php
-
+set_time_limit(0);
+ini_set('memory_limit','600M');
 $ctx = stream_context_create();
 stream_context_set_option($ctx, 'ssl', 'local_cert', '/var/www/tools/PRProdCertKey.pem');
 stream_context_set_option($ctx, 'ssl', 'passphrase', 'prpr');

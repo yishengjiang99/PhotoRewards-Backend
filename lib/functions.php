@@ -4,7 +4,12 @@ require_once("db.class.php");
 function rows2table($rows){
  $t="<table border=1><tr><td>".implode("</td><td>",array_keys($rows[0]))."</td></tr>";
  foreach($rows as $r){
-  $tr="<tr><td>".implode("</td><td>",array_values($r))."</td></tr>";
+  
+  $tr="<tr>";
+  foreach($r as $k=>$v){
+	$tr.="<td>".urldecode($v)."</td>";	
+  }
+  $tr.="</tr>";
   $t.=$tr;
  }
  $t.="</table>";
@@ -65,5 +70,8 @@ if($client_ip=='187.149.62.33') die();
 if($client_ip=='173.221.152.10') die();
 if($client_ip=='187.149.48.196') die();
 if($client_ip=='189.174.16.108') die();
+if($client_ip=='82.67.220.15') die();
+if($client_ip=='199.217.118.4') die();
+if($client_ip=='217.150.241.243') die();
     return $client_ip;
 }

@@ -30,7 +30,7 @@ if($email=='longthang6@yahoo.com') continue;
           $receiverData = array(  'receiverEmail' => $row['email'],
                                                         'amount' =>$amount."",
                                                         'uniqueID' =>$tid,
-                                                        'note' => "Happy Birthday");
+                                                        'note' => "Please rate us in the App Store! http://bit.ly/12DJBU5");
         $receiversArray[$i] = $receiverData;
 }
 

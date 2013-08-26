@@ -1,5 +1,6 @@
 <?php
-
+set_time_limit(0);
+ini_set('memory_limit','600M');
 $ctx = stream_context_create();
 stream_context_set_option($ctx, 'ssl', 'local_cert', '/var/www/tools/PRProdCertKey.pem');
 stream_context_set_option($ctx, 'ssl', 'passphrase', 'prpr');
@@ -27,6 +28,7 @@ $iam='';
 foreach($rows as $row){
  $deviceToken=$row['token'];
  if($deviceToken=='') continue;
+
  $body['aps'] = array(
 	'alert' => $message,
 	'sound' => 'default',
@@ -41,7 +43,7 @@ foreach($rows as $row){
  echo "\n$deviceToken $result";
 
 if(!$fp || $result==0 || $result=='0') {
- echo "remaking";
+  echo "remaking";
  $ctx = stream_context_create();
  stream_context_set_option($ctx, 'ssl', 'local_cert', '/var/www/tools/PRProdCertKey.pem');
  stream_context_set_option($ctx, 'ssl', 'passphrase', 'prpr'); 

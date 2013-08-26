@@ -35,10 +35,11 @@ $levelmax=array(
 7=>5000, 
 8=>6000,
 );
-$multi=2;
-function getBonusPoints($myxp){
- global $xplevel, $levelminbonus, $levelmax,$multi;
+$multiplier=2;
 
+function getBonusPoints($myxp){
+ global $xplevel, $levelminbonus, $levelmax,$multiplier;
+ if(!$multiplier) $multiplier=1;
  $mylevel=0;
  $nexttlevel=0;
  $nextmin=0;$nextmax=0;
@@ -50,14 +51,13 @@ function getBonusPoints($myxp){
         $tnl=(double)($myxp-$lastlevelxp);
         $levelxptotal=(double)($lxp-$lastlevelxp);
 	$tnl_percent=$tnl/$levelxptotal*100;
-        $nextmin=$levelminbonus[$nextlevel]*$multi;
-	$nextmax=$levelmax[$nextlevel]*$multi;
+        $nextmin=$levelminbonus[$nextlevel]*$multiplier;
+	$nextmax=$levelmax[$nextlevel]*$multiplier;
         break;
    }
-   
    $mylevel=$level;
    $lastlevelxp=$lxp;
  }
 
- return array('level'=>$mylevel,'xp'=>$myxp,'minbonus'=>$levelminbonus[$mylevel]*$multi,'maxbonus'=>$levelmax[$mylevel]*$multi,'levelPercentage'=>$tnl_percent,'bonusNextLevel'=>"$nextmin to $nextmax Points");
+ return array('level'=>$mylevel,'xp'=>$myxp,'minbonus'=>$levelminbonus[$mylevel]*$multiplier,'maxbonus'=>$levelmax[$mylevel]*$multiplier,'levelPercentage'=>$tnl_percent,'bonusNextLevel'=>"$nextmin to $nextmax Points");
 }

@@ -1,7 +1,6 @@
 <?php
 require_once("/var/www/lib/functions.php");
 require_once("/var/www/html/pr/levels.php");
-
 $idfa=$_GET['idfa'];
 $mac=$_GET['mac'];
 $uid=$_GET['uid'];
@@ -17,9 +16,13 @@ if(stripos($deviceInfo,"ipod")!==false){
 if(stripos($deviceInfo,"ipad")!==false){
  $device='ipad';
 }
+$country='US';
+if(isset($user['country']) && $user['country']!='' && $user['country']!='VN'){
+ $country=$user['country'];
+}
 $ua=$_SERVER['HTTP_USER_AGENT'];
 $reviewer=0;
-if(strpos($ua,"PictureRewards/1.4")!==false){
+if(strpos($ua,"PictureRewards/1.2")!==false){
  $reviewer=1;
 }
 $smap=array();
@@ -134,9 +137,9 @@ foreach($offers as $offer){
 $badge=array();
 if($start<=10){
  $goodever=explode(",",file_get_contents("/var/www/html/pr/goodever.json"));
- $data=json_decode(file_get_contents("/var/www/cache/badgecache"),1);
+ $data=json_decode(file_get_contents("/var/www/cache/badgecache$country"),1);
  if(!$data || $data['ttl']<time()){
-        $everbadge="http://api.everbadge.com/offersapi/offers/json?api_key=9B8yxsmXx7xv7ujVFYJNf1373448697&os=ios&country_code=US&t=".time();
+        $everbadge="http://api.everbadge.com/offersapi/offers/json?api_key=9B8yxsmXx7xv7ujVFYJNf1373448697&os=ios&country_code=$country&t=".time();
         $ch=curl_init();
         curl_setopt($ch, CURLOPT_URL, $everbadge);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -144,8 +147,8 @@ if($start<=10){
         $everbadgeOffers = json_decode($badgeStr,1);
         curl_close($ch);
 	error_log("calling $everbadge");
-        $data=array("rows"=>$everbadgeOffers, "ttl"=>time()+60*5);
-        file_put_contents("/var/www/cache/badgecache",json_encode($data));
+        $data=array("rows"=>$everbadgeOffers, "ttl"=>time()+60*10);
+        file_put_contents("/var/www/cache/badgecache$country",json_encode($data));
  }
  $everbadgeOffers=$data['rows'];
  $et=$everbadgeOffers['data']['offers'];
@@ -201,12 +204,10 @@ $uo=array();
 if($start==20 || $start==10){
  if($start==10) $dd='desc';
  else $dd='asc';
-
  $ustart=$start-10;
  $sql="select 'UserOffers' as OfferType, 'Take a picture' as Action, b.fbid, a.id as refId,'localt' as IconURL, title as Name, url as RedirectURL, category as c2, cash_bid as Amount, 1 as canUpload,b.username ";
- $sql.="from PictureRequest a join appuser b on a.uid = b.id where status>0 and cash_bid>0 and cash_bid<5 and b.stars>0 order by b.id $dd limit $ustart, 10";	
+ $sql.="from PictureRequest a join appuser b on a.uid = b.id where status>0 and cash_bid>0 and cash_bid<5 and b.stars>0 order by b.modified $dd limit $ustart, 10";	
  $uo=db::rows($sql);
-
  foreach($uo as $offer){
    $subid=$uid."_1337";
 //   $offer['IconURL']="http://grepawk.s3.amazonaws.com/pr2logo_blue.png";

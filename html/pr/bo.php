@@ -19,20 +19,29 @@ if(stripos($deviceInfo,"ipad")!==false){
 }
 $ua=$_SERVER['HTTP_USER_AGENT'];
 $reviewer=0;
-if(strpos($ua,"PictureRewards/1.2")!==false){
+if(strpos($ua,"PictureRewards/1.4")!==false){
  $reviewer=1;
 }
 $smap=array();
 $start=intval($_GET['start']);
 if(!$start) $start=0;
 $o=array();
+$vcount=$user['visit_count'];
+$fbliked=$user['fbliked'];
 
-if($uid==2902){
+if($start==10 ||  ($fbliked==1 && $start==0)){
  $code=$user['username'];
- $message="Download PhotoRewards from the AppStore and enter my bonus code '$code' for a FREE 200 Points. Try apps and upload screen shots for more points. 1000 Points = $1 in PayPal Cash, Amazon or iTune Gift Cards";
- $url="https://www.facebook.com/dialog/apprequests?app_id=146678772188121&message=".urlencode($message)."&display=touch&redirect_uri=https://www.json999.com/redirect.php?from=invideDone&uid=$uid";
- $o[]=array("Name"=>"Invite Friends for Extra Points","Amount"=>"$$","Action"=>"Bonus Code: $code", "hint"=>"Invite","canUpload"=>1,"OfferType"=>"CPA","RedirectURL"=>$url,"appid"=>'fb',"IconURL"=>"http://grepawk.s3.amazonaws.com/pr2logo_blue.png");
-error_log($url);
+ $message="Try apps and upload screen shots for more points. 1000 Points = $1 in PayPal Cash, Amazon or iTune Gift Cards";
+ $url="https://www.facebook.com/dialog/apprequests?app_id=146678772188121&message=".urlencode($message)."&display=touch&redirect_uri=https://www.json999.com/redirect.php?from=invideDone$uid";
+ $o[]=array("Name"=>"Invite Friends for XP","Amount"=>"XP","Action"=>"5 XP for each friend", "hint"=>"Invite Friends","canUpload"=>1,"OfferType"=>"CPA","RedirectURL"=>$url,
+"refId"=>577,"IconURL"=>"https://fbcdn-profile-a.akamaihd.net/hprofile-ak-prn2/c35.35.442.442/s200x200/1239555_295026823968647_399436309_n.png");
+}
+
+if($start==0 && $vcount>0 && ($fbliked==0 || $uid==2902)){
+  $mid=md5($uid.$idfa."fblikeh");
+  $o[]=array("Name"=>"Like us on Facebook","Amount"=>"20","Action"=>"Get real-time updates on offers","canUpload"=>1,"OfferType"=>"CPA",
+  "RedirectURL"=>"http://json999.com/pr/fblike.php?uid=$uid&h=$mid","IconURL"=>"https://fbcdn-profile-a.akamaihd.net/hprofile-ak-prn2/c35.35.442.442/s200x200/1239555_295026823968647_399436309_n.png","hint"=>"Go to FB",
+  "refId"=>577);
 }
 $showpts=1;
 if(true){
@@ -51,10 +60,9 @@ if(true){
   if($start==0) $o[]=$r;
  }
 }
-$vcount=$user['visit_count'];
 
 $offers=db::rows("select a.id as offer_id,active, affiliate_network, b.IconURL, click_url as RedirectURL, platform, 'Free' as Cost,completions, a.name as Name,'App' as OfferType,thumbnail,storeID as StoreID, cash_value as Amount, 
-description as Action
+description as Action,completion4
 from offers a left join apps b on a.storeID=b.id where platform like '%iOS%' and active>0 order by active desc, completions desc limit $start, 45");
 
 /*
@@ -92,9 +100,9 @@ foreach($offers as $offer){
  $offer['OfferType']="App";
  $offer['Name'] = str_ireplace("download ","",$offer['Name']);
  if(!$offer['IconURL']) $offer['IconURL']=$offer['thumbnail'];
- $completions=intval($offer['completions']);
+ $completions=intval($offer['completion4']);
  if($completions<1){
-  if($vcount<5 || rand(0,10)<1) continue;
+  if($vcount<5 || rand(0,10)<5) continue;
  }
 
  $offer['Amount']=$points."";
@@ -158,14 +166,14 @@ if($start<=10){
      continue;
   }
    if(!in_array($off['StoreID'],$goodever)){
-      if($vcount<10 || rand(0,3)!=1) { // error_log("giving ".$off['StoreID']." a try");
+      if($vcount<10 || rand(0,7)!=1) { // error_log("giving ".$off['StoreID']." a try");
          continue;
 	}
    }
   if($device=="ipod" && stripos($row['description'],"ipod")!==false) continue;
 
   $smap[$off['refId']]=1;
-  $payout=$row['payout']*300;
+  $payout=$row['payout']*200;
   $off['Amount']="".$payout;
   if($reviewer==1 || $showpts==0) $off['Amount']="Free";
   $off['Action']="Share a Screenshot of This App";
@@ -190,16 +198,18 @@ if(false){
  $o=array_merge($o,$badge);
 }
 $uo=array();
-if(false && $start>=10){
+if($start==20 || $start==10){
+ if($start==10) $dd='desc';
+ else $dd='asc';
  $ustart=$start-10;
  $sql="select 'UserOffers' as OfferType, 'Take a picture' as Action, b.fbid, a.id as refId,'localt' as IconURL, title as Name, url as RedirectURL, category as c2, cash_bid as Amount, 1 as canUpload,b.username ";
- $sql.="from PictureRequest a join appuser b on a.uid = b.id where status>0 and cash_bid>0 and cash_bid<5 order by b.modified asc limit $ustart, 10";	
+ $sql.="from PictureRequest a join appuser b on a.uid = b.id where status>0 and cash_bid>0 and cash_bid<5 and b.stars>0 order by b.modified $dd limit $ustart, 10";	
  $uo=db::rows($sql);
-
  foreach($uo as $offer){
    $subid=$uid."_1337";
-   $offer['IconURL']="http://grepawk.s3.amazonaws.com/pr2logo_blue.png";
+//   $offer['IconURL']="http://grepawk.s3.amazonaws.com/pr2logo_blue.png";
    if($offer['Name']=="(null)") continue;
+   $offer['category']=$offer['c2'];
    $offer['Name']=$offer['Name']." ".$offer['c2'];
    $offer['Action']="Bonus code: ".$offer['username'];
    if($offer['fbid']!=0) $offer['IconURL']="https://graph.facebook.com/".$offer['fbid']."/picture?width=200&height=200";

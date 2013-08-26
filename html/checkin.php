@@ -39,7 +39,7 @@ if($cb=="stockalerts"){
 	//	$config['gmurl']="https://www.json999.com/redirect.php?from=stockalert";
 	}
 }
-if($newuser==1 && ($cb=='stockalerts' || $cb=="slide" || $cb=='projectile')){
+if($newuser==1 && ($cb=='stockalerts' || $cb=="slide")){
  $cbIds=array("stockalerts"=>642101022,"slide"=>648179171,'projectile'=>644641252);
  $appid=$cbIds[$cb];
  $prcb="https://json999.com/sponsored_callback.php?mac=$mac&idfa=$idfa&storeID=$appid&pw=dafhfadsfkdsadlds";
