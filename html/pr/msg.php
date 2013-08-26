@@ -6,6 +6,9 @@ $_GET=$_REQUEST;
 $to=intval($_GET['toUid']);
 $from =intval($_GET['from']);
 $msg=stripslashes($_GET['msg']);
+if($msg==""){
+     die(json_encode(array("title"=>"Not sent","msg"=>"Your msg was blank")));
+}
 $msg=urlencode($msg);
 $replyTo=intval($_GET['replyto']);
 if($replyTo==2) $msg="addfriend";

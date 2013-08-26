@@ -9,7 +9,7 @@ $idfa=$_GET['idfa'];
 $cb=$_GET['cb'];
 $uid=$_GET['uid'];
 if($uid==3551){
- die(json_encode(array("title"=>"","msg"=>"Please email yisheng@grepawk.com with screenshots of where you promote your bonus code")));
+// die(json_encode(array("title"=>"","msg"=>"Please email yisheng@grepawk.com with screenshots of where you promote your bonus code")));
 }
 $user=db::row("select * from appuser where id=$uid");
 if($user['banned']==1){
@@ -40,17 +40,29 @@ if($reward['Type']=='gc'){
  $codestr=$code['code'];
  $name=$reward['name'];
  $instruction=$reward['instruction'];
+
  $ret=array("title"=>"You win!","msg"=>"The $name code that you redeemed is:\n\r$codestr\n\r$instruction"); 
+
  if($reward['action']!=""){
-   $ret['url']=$reward['action'];
+   $url=$reward['action'];
+   $url=str_replace("CODE_HERE",$codestr,$url);
+   $ret['url']=$url;
  }  
  die(json_encode($ret));
 }else if ($reward['Type']=='Paypal'){
-
- $email=$_GET['email'];
-if($email=="orlando12.12@hotmail.com" || $email=="Orlando12.12@hotmail.com"){
-  die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
+ if(!isset($_GET['email'])){
+    $h=$_GET['h'];
+    $idfa=$_GET['idfa'];
+    $t=$_GET['t'];
+    $mac=$_GET['mac'];
+    $url="https://www.json999.com/enterEmail.php?uid=$uid&h=$h&t=$t&idfa=$idfa&mac=$mac";
+    die(json_encode(array("title"=>"Email required","msg"=>"**Further action required**\nClick 'GO' to enter your PayPal email address","url"=>$url)));
  }
+ $email=$_GET['email'];
+
+ if($email=="orlando12.12@hotmail.com" || $email=="Orlando12.12@hotmail.com"){
+   die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
+  }
  $balance=$user['stars'];
  $value=ceil($balance/10);
  $cnt=db::cols("select count(distinct transfer_to_user_id) from PaypalTransactions where created>date_sub(now(), interval 3 day) and email='$email'");
@@ -61,10 +73,10 @@ if($email=="orlando12.12@hotmail.com" || $email=="Orlando12.12@hotmail.com"){
  db::exec("update appuser set stars=0 where id=$uid");
  $trxid=time().$uid;
  db::exec("insert into PaypalTransactions set transfer_to_user_id=$uid,email='$email',status='$status',amount='$value',masspay_trx_id=$trxid,created=now()"); 
-  $cmd="php /var/www/tools/masspay.php  > /dev/null 2>&1 &";
+ $cmd="php /var/www/tools/masspay.php  > /dev/null 2>&1 &";
  error_log($cmd); 
  exec($cmd);
- die(json_encode(array("title"=>"You win!","msg"=>"PayPal payments will be made to $email shortly")));
+ die(json_encode(array("title"=>"You win!","msg"=>"PayPal payments will be made to $email shortly.\n\nLike PhotoRewards? Please take a moment to rate us in the App Store.",'url'=>'https://userpub.itunes.apple.com/WebObjects/MZUserPublishing.woa/wa/addUserReview?id=662632957&type=Purple+Software')));
 }else if ($reward['Type']=="iap"){
  die(json_encode(array("title"=>"You win!","msg"=>"You have been awarded with ".$reward['name']."\nWould you like to use your reward now?","url"=>$reward['action'])));
 }

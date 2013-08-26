@@ -15,11 +15,10 @@ $id=md5($uid.time());
 $msg="";
 $points=0;
 if($dealtype=="DoneApp" || $dealtype=="App"){
- $install=db::row("select * from sponsored_app_installs where id=$refId");
+ $install=db::row("select * from sponsored_app_installs where id=$refId and uid=$uid");
  if(!$install){
     $msg="Try this app first";
  }
-
  if($install['network']=="santa"){
 	$prevUploadedByThisUser=db::row("select * from UploadPictures where refId=$refId and uid=$uid");
 	if($prevUploadedByThisUser){
@@ -41,18 +40,17 @@ if($dealtype=="DoneApp" || $dealtype=="App"){
  }
 }
 else if($dealtype=='UserOffers'){
-//die("");
  $prevUploadedByThisUser=db::row("select * from UploadPictures where refId=$refId and uid=$uid");
  if(!$prevUploadedByThisUser){
+	$recent=db::row("select * from UploadPictures where uid=$uid and created>date_sub(now(), interval 1 minute) and type='UserOffers'");
+	if($recent!=null) die("0|".$id.".jpeg|http://www.json999.com/pr/postPicture.php|Please slow down and upload quality pictures");
 	$offer=db::row("select * from PictureRequest where id=$refId");
 	$points=$offer['cash_bid'];
  	$offeringUid=$offer['uid'];
 	$title=$offer['title'];
 	if($uid==$offeringUid) $points=0;
 	error_log(" $uid vs $offeringUid");
-	
         $offeringUser=db::row("select * from appuser where id=$offeringUid");
-//	error_log(json_encode($offer)." UPLOAD PICTURES from user ".json_encode($offeringUser));
         if($offeringUser['stars']-$points<=0){
 		db::exec("update PictureRequest set status=-1,cash_bid=0 where id=$refId limit 1");
 		$msg="The seller ran out of money :(";	

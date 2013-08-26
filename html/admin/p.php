@@ -7,7 +7,6 @@ $rev1=db::rows("select sum(revenue)/100 as rev from sponsored_app_installs where
 $ppl1 =db::rows("select sum(amount)/100 as ppal_out from PaypalTransactions where created>date_sub(now(), interval 1 hour) and status='processed'");
 $giftcards1=db::rows("select sum(r.Points)/1000 as cards_out from reward_codes a join rewards r on a.reward_id=r.id where given_out=1 and date_redeemed>date_sub(now(), interval 1 hour)");
 
-
 $rev=db::rows("select sum(revenue)/100 as rev from sponsored_app_installs where created>date_sub(now(), interval 1 day)");
 $ppl24 =db::rows("select sum(amount)/100 as ppal_out from PaypalTransactions where created>date_sub(now(), interval 1 day) and status='processed'");
 $giftcards24=db::rows("select sum(r.Points)/1000 as cards_out from reward_codes a join rewards r on a.reward_id=r.id where given_out=1 and date_redeemed>date_sub(now(), interval 1 day)");
@@ -27,7 +26,7 @@ $reffday=db::rows("select sum(ltv)/100 as revenue,sum(points_to_agent)*2/1000 as
 $refweek=db::rows("select sum(ltv)/100 as revenue,sum(points_to_agent)*2/1000 as cost,count(1) as joiners,count(distinct agentUid) as agent from appuser a join referral_bonuses b 
  on a.id=b.joinerUid where a.created>date_sub(now(), interval 7 day)");
 
-$allusers=db::rows("select app, avg(stars),sum(if(modified>date_sub(now(), interval 1 day),1,0)) as active_today, avg(xp),count(1) as cnt,sum(stars)/1000 as account_payable, app from appuser where app='picrewards'");
+$allusers=db::rows("select app, avg(stars),sum(if(modified>date_sub(now(), interval 1 day),1,0)) as active_today, avg(xp),count(1) as cnt,sum(stars)/1000 as account_payable, app from appuser where banned=0 and app='picrewards'");
 $cashouts=db::rows("select b.name, b.Points,sum(given_out),count(1) from reward_codes a join rewards b on a.reward_id=b.id group by a.reward_id");
 $referrals=db::rows("select count(1), sum(points_to_agent)/1000 as paid_to_agent,sum(points_to_agent)/1000 as paid_to_agent,sum(points_to_joiner)/1000 as paid_to_joiner, count(distinct agentUid) as agents from referral_bonuses");
 $ppal=db::rows("select sum(amount),count(1),count(distinct transfer_to_user_id) as unique_users from PaypalTransactions");
@@ -36,6 +35,8 @@ $topagents=db::rows("select count(1), count(distinct ipaddress), avg(ltv) as ltv
 $duamua=db::rows("select sum(if(modified>date_sub(now(), interval 1 day),1,0))/sum(if(modified>date_sub(now(), interval 27 day),1,0)) as DoMu from appuser where app='picrewards' and banned=0");
 $namesavail=db::row("select count(1) as cnt from available_nicknames where taken=0");
 $namesleft=$namesavail['cnt'];
+$devices=db::rows("select substring_index(deviceInfo,';|',1) as device, count(1) as cnt, avg(ltv) as ltv from appuser where deviceInfo!='' and banned=0 group by substring_index(deviceInfo,'|',1) having cnt>40");
+
 echo "<table><tr><td valign=top>"; //lev1
 echo "<table border=1>";
 echo "<tr><td colspan=3>P&L last hour</td>";
@@ -81,6 +82,11 @@ echo "<tr><td valign=top>".rows2table($revenue_breakout)."</td>";
 echo "<td valign=top>".rows2table($revenue_breakout_all)."</td></tr></table>";
 echo "Inventory";
 echo rows2table($cashouts);
+echo "devices";
+echo rows2table($devices);
+$countries=db::rows("select avg(ltv),country,count(1) as cnt, sum(if(modified>date_sub(now(), interval 1 day),1,0)) as activetoday from appuser where banned=0 and ipaddress!='' group by country  having count(1)>20 order by count(1) desc");
+echo "countries";
+echo rows2table($countries);
 echo "<li>nicknames left: $namesleft";
 echo "</td></tr></table>";
 ?>

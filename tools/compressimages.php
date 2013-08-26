@@ -9,7 +9,7 @@ foreach($imgs as $img){
   $i=$img['id'];
   $file='/var/www/html/pr/uploads/'.$i.'.jpeg';
   if(!file_exists($file)){
-   echo "\nupdate UploadPictures set reviewed=-1 where id='$i' limit 1";
+    echo "\nupdate UploadPictures set reviewed=-1 where id='$i' limit 1";
     db::exec("update UploadPictures set reviewed=-1 where id='$i' limit 1");
 	continue;
   }

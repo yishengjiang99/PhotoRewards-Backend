@@ -1,4 +1,5 @@
 
+
 <?php
 require_once("/var/www/lib/functions.php");
 require_once("/var/www/lib/firewall.php");
@@ -8,17 +9,13 @@ $mac=$_GET['mac'];
 $idfa=$_GET['idfa'];
 $cb=$_GET['cb'];
 $uid=$_GET['uid'];
-if($uid==3551){
-// die(json_encode(array("title"=>"","msg"=>"Please email yisheng@grepawk.com with screenshots of where you promote your bonus code")));
-}
 $user=db::row("select * from appuser where id=$uid");
 if($user['banned']==1){
-die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
+ die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
 }
 $rid=intval($_REQUEST['giftID']);
 $reward=db::row("select * from rewards where id=$rid");
 error_log("redeem ".$user['stars']." VS  ".$reward['Points']."   ".json_encode($user));
-
 if($reward['Points']>$user['stars']){
  die(json_encode(array("title"=>"","msg"=>"You do not have enough points for this reward")));
 }
@@ -50,10 +47,19 @@ if($reward['Type']=='gc'){
  }  
  die(json_encode($ret));
 }else if ($reward['Type']=='Paypal'){
- $email=$_GET['email'];
+ if(!isset($_GET['email'])){
+    $h=$_GET['h'];
+    $idfa=$_GET['idfa'];
+    $t=$_GET['t'];
+    $mac=$_GET['mac'];
+    $url="https://www.json999.com/enterEmail.php?uid=$uid&h=$h&t=$t&idfa=$idfa&mac=$mac";
+    die(json_encode(array("title"=>"Email required","msg"=>"****Further action required****\nClick 'GO' to enter your PayPal email address","url"=>$url)));
+ }
+ $email=stripslashes($_GET['email']);
  if($email=="orlando12.12@hotmail.com" || $email=="Orlando12.12@hotmail.com"){
    die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
   }
+ db::exec("update appuser set email='$email' where id=$uid");
  $balance=$user['stars'];
  $value=ceil($balance/10);
  $cnt=db::cols("select count(distinct transfer_to_user_id) from PaypalTransactions where created>date_sub(now(), interval 3 day) and email='$email'");
@@ -67,7 +73,7 @@ if($reward['Type']=='gc'){
  $cmd="php /var/www/tools/masspay.php  > /dev/null 2>&1 &";
  error_log($cmd); 
  exec($cmd);
- die(json_encode(array("title"=>"You win!","msg"=>"PayPal payments will be made to $email shortly.\n\nLike PhotoRewards? Please take a moment to rate us in the App Store.",'url'=>'https://userpub.itunes.apple.com/WebObjects/MZUserPublishing.woa/wa/addUserReview?id=662632957&type=Purple+Software')));
+ die(json_encode(array("title"=>"You win!","msg"=>"PayPal payments will be made to $email shortly.\n\nLike PhotoRewards? Please take a moment to rate us in the App Store.",'url'=>'http://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?pageNumber=0&sortOrdering=1&type=Purple+Software&mt=8&id=662632957')));
 }else if ($reward['Type']=="iap"){
  die(json_encode(array("title"=>"You win!","msg"=>"You have been awarded with ".$reward['name']."\nWould you like to use your reward now?","url"=>$reward['action'])));
 }

@@ -15,7 +15,8 @@ if(isset($_REQUEST['start'])){
 if(isset($_REQUEST['i'])){
  $status=$_REQUEST['i'];
 }
-
+$left=db::row("select count(1) as cnt from UploadPictures where type='DoneApp' and reviewed=0");
+$leftstr=$left['cnt'];
 $pics = db::rows("select a.id, offer_id, b.name from UploadPictures a join apps b on a.offer_id=b.id where type='DoneApp' and reviewed=$status order by b.id limit 60");
 foreach($pics as $p){
  $id=$p['id'];
@@ -23,13 +24,11 @@ foreach($pics as $p){
    db::exec($sql);
 }
 $start=$start+20;
+
 ?>
 <html>
 <body>
-<li><a href='/admin/safety.php?i=0'>pending</a>
-<li><a href='/admin/safety.php?i=1'>approved</a>
-<li><a href='/admin/safety.php?i=-1'>rejected</a>
-
+<?php echo $leftstr; ?>
 <form method=POST>
  <input type=hidden name=start value='<?= $start ?>' />
 <input type=hidden name='allids' value='<? echo json_encode($pics) ?>'>

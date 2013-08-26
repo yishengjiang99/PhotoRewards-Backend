@@ -13,8 +13,9 @@ if(!$user) die("0");
 
 $uid=$user['id'];
 $appid=intval($_GET['storeID']);
-$offer=db::row("select payout,cash_value,id from offers where storeID=$appid");
+$offer=db::row("select payout,cash_value,id,active from offers where storeID=$appid");
 $points=intval($offer['cash_value'])*10;
+if($offer['active']==0) exit;
 
 $offerId=$offer['id'];
 $subid=$uid."_".$offerId;

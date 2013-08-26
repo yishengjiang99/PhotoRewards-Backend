@@ -12,7 +12,7 @@ die();
 }
 $h=$r['h'];
 if(abs(intval($t)-time())>10){
-error_log("firewall: suspicious $t at".time());
+error_log("firewall: suspicious $t at".time()." ".$_SERVER['REQUEST_URI'].json_encode($_REQUEST));
 //die();
 }
 if($h!=md5($t.$idfa."what1sdns?")){
