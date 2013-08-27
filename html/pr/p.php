@@ -44,7 +44,8 @@ error_log("update UploadPictures set reviewed=reviewed-1 where id='$pid'");
 <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 </head>
  <a href='picrewards://' class=btn><h1>Back To PhotoRewards</h1></a>
-<br><br>
+<br>
+<a href="http://c.mobpartner.mobi/?s=706540&a=2471&country=US&p=67985&cr=401003"><img src="http://r.mobpartner.mobi?s=706540&a=2471&country=US&p=67985&cr=401003" /></a><br>
 <form method=POST <?=$confirm?>><input type=hidden value='<?= $_REQUEST['pid'] ?>' name='pid' />
 <input type=hidden name=report value=1 />
 <input type=hidden name=h value='<?= $h ?>' />

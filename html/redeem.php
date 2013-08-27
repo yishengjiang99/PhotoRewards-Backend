@@ -37,7 +37,8 @@ if($reward['Type']=='gc'){
  $codestr=$code['code'];
  $name=$reward['name'];
  $instruction=$reward['instruction'];
-
+ require_once("/var/www/html/pr/apns.php");
+ apnsUser(2902,"$uid redeemed $name","$uid redeemed $name");
  $ret=array("title"=>"You win!","msg"=>"The $name code that you redeemed is:\n\r$codestr\n\r$instruction"); 
 
  if($reward['action']!=""){

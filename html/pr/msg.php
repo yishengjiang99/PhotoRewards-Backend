@@ -2,7 +2,6 @@
 require_once("/var/www/lib/functions.php");
 require_once("/var/www/html/pr/apns.php"); 
 $_GET=$_REQUEST;
-
 $to=intval($_GET['toUid']);
 $from =intval($_GET['from']);
 $msg=stripslashes($_GET['msg']);
@@ -16,7 +15,7 @@ db::exec("insert into inbox set from_uid=$from, to_uid=$to, msg='$msg', created=
 $fromname="";
 $user= db::row("select username from appuser where id=$from");
 $fromname=$user['username'];
-if(stripos($msg,$fromname)!==FALSE){!
+if(stripos($msg,$fromname)!==FALSE){
      die(json_encode(array("title"=>"You lose","msg"=>"Please dont spam")));
 }
 $amsg="$fromname sent you a message!";

@@ -72,9 +72,8 @@ $url="http://api.appdog.com/offerwall?limit=10&offset=$start&type=json&source=91
 error_log($url);
 $offers=json_decode(file_get_contents($url),1);
 */
-if($uid==2902 || $uid==3390 || $uid==3353){
+if($uid==2902 || $uid==3390){
   $url="http://api.appdog.com/offerwall?limit=20&offset=$start&type=json&source=9135311512939222220&idfa=$idfa&fbid=$uid&mac=$mac";
-error_log($url);
   $offers=json_decode(file_get_contents($url),1);
   foreach($offers as $offer){
    if($offer['OfferType']!="App") continue;
@@ -91,7 +90,6 @@ error_log($url);
    $o[]=$offer;
   }
 }
-
 $rayoffers=array();
 foreach($offers as $offer){
  $oid=$offer['offer_id'];
