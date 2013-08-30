@@ -1,7 +1,7 @@
 <?php
 require_once("/var/www/lib/functions.php");
 $r=$_REQUEST;
-$uid=$r['uid'];
+$uid=intval($r['uid']);
 $pid=$r['pid'];
 $pid=str_replace("t/","",$pid);
 $pid=str_replace("m/","",$pid);
@@ -26,8 +26,19 @@ if(false && $uid==$offerer){
 $reportedandreturn=0;
 if(isset($r['report'])){
    $reportedandreturn=1;
-error_log("update UploadPictures set reviewed=reviewed-1 where id='$pid'");
- db::exec("update UploadPictures set reviewed=reviewed-1 where id='$pid'");
+ error_log("update UploadPictures set reviewed=reviewed-1 where id='$pid'");
+
+ $user=db::row("select * from appuser where id=$uid");
+ $username=$user['username'];
+ if($username=='superadmin') $username='redcat';
+ db::exec("update UploadPictures set reviewed=-1 where id='$pid'");
+ $pic=db::row("select * from UploadPicture where id='$pid'");
+ $upuid=$pic['uid'];
+ require_once("/var/www/html/pr/apns.php");
+ $cc=$r['complaint'];
+ apnsUser($upuid,"$username reported that your picture: $cc","$username reported that your picture: $cc","http://www.json999.com/pr/picture.php?id=$pid");
+ apnsUser(2902,"$username reported that your picture is: $cc","$username reported that your picture: $cc","http://www.json999.com/pr/p.php?pid=$pid&uid=$upuid");
+
  if(false && isset($r['h']) && $r['h']!='' && $r['h']=$h && $uid=$offerer){
 //   db::exec("update appuser set stars=stars-$points where id=$uploader");
 //   db::exec("update appuser set	stars=stars+$points where id=$offerer");
@@ -54,9 +65,9 @@ error_log("update UploadPictures set reviewed=reviewed-1 where id='$pid'");
 Report this picture!
 <br><select name='complaint'>
 <option value='none'>Select reason</option>
-<option value='shitty'>Picture looks like shit</option>
+<option value='Poor Quality'>Picture is poor quality</option>
 <option value='spam'>Poster is spammer</option>
-<option value='offtopic'>Off-topic</option>
+<option value='off topic'>Off-topic</option>
 <option value='offensive'>Offensive/explicit</option>
 </select>
 <input type=submit value='complain' />

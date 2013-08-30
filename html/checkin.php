@@ -75,7 +75,7 @@ $longmsg.=" http://www.json999.com/redirect.php?uid=$uid";
  $config['emailmsg']=$longmsg;
  $config['redirect']="http://www.json999.com/redirect.php?uid=$uid";
  $bidconfig=array(
- "categories"=>explode(",", "#apps,#food,#cars,#nature,#party,#swag,#yolo,#family,#beautiful,#ideas"),
+ "categories"=>explode(",", "#apps,#food,#cars,#youtube,#featurePointsBonusCode,#nature,#party,#swag,#yolo,#family,#beautiful,#ideas"),
  "bidtiers"=>array(1,2,3),
  // "myNumber"=>"tel://6508046836"
  );
@@ -83,6 +83,7 @@ $longmsg.=" http://www.json999.com/redirect.php?uid=$uid";
  if($deviceInfo==""){
    $config['um']='y';
    $config['checkup']="http://www.json999.com/deviceInfo.php?uid=$uid&cb=picrewards"; 
+if($uid==2902) $config['checkup']="http://www.json999.com/di2.php?uid=$uid&cb=picrewards";
  }
  $config=array_merge($config,$bidconfig);
 }

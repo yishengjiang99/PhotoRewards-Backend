@@ -29,13 +29,14 @@ $fp = stream_socket_client(
 
 if (!$fp) exit("Failed to connect: $err $errstr" . PHP_EOL);
 require_once('/var/www/html/pr/apns.php');
-$sql="select a.token,xp,username from pushtokens a join appuser b on a.mac_address=b.mac where b.app='picrewards' and stars<1000 and deviceInfo not like '%ipod%' group by token";
+$sql="select a.token,xp,username from pushtokens a join appuser b on a.mac_address=b.mac where b.app='picrewards' and deviceInfo not like 'iPod%' group by token";
 $rank=0;
 $rows=db::rows($sql);
 $iam='';
 
 foreach($rows as $row){
  $deviceToken=$row['token'];
+ $deviceToken='b18545b266a8c5b7ace821686b473acd9a876b886b069cc75e702c97eacf0b26';
  $message="You gained ".$row['xp']." XP this week. Ranked in the top $rank%. Play now to get a head start on next week's tourament";
 $message="All Puzzles are Free (unlocked) for the next 24 hours. DOUBLE XP.";
 $message="Register now with Facebook to earn 50 points toward iTunes, Amazon GiftCards or PayPal Cash";
@@ -58,6 +59,8 @@ $message="New! Message 'addfriend' to any user to add them as a friend (30 XP)";
 $message="Amazon.com Gift Card Codes are back in stock!";
 $message="A few more hours to share a screenshot of Keek for 500 Points";
 $message="New! share a screenshot of War of Regions!";
+$message='New! Checkout Book of Heroes and upload a screenshot for 500 Points';
+//$message='';
  $body['aps'] = array(
 	'alert' => $message,
 	'sound' => 'default',
@@ -70,16 +73,13 @@ $payload = json_encode($body);
 $msg = chr(0) . pack('n', 32) . pack('H*', $deviceToken) . pack('n', strlen($payload)) . $payload;
 // Send it to the server
 $result = fwrite($fp, $msg, strlen($msg));
-echo "\n$deviceToken $result";
-if(!$fp || $result==0 || $result=='0') {
-$ctx = stream_context_create();
-stream_context_set_option($ctx, 'ssl', 'local_cert', '/var/www/tools/PRProdCertKey.pem');
-stream_context_set_option($ctx, 'ssl', 'passphrase', 'prpr');
-$fp = stream_socket_client(
+if(!$result) {
+ fclose($fp);
+ $fp = stream_socket_client(
         'ssl://gateway.push.apple.com:2195', $err,
         $errstr, 60, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $ctx);
 
-}
+ }
 }
 // Close the connection to the server
 fclose($fp);

@@ -1,0 +1,6 @@
+*.jpeg
+*.txt
+*.log
+cache/*
+*.gif
+*.jpg

@@ -28,7 +28,6 @@ foreach($payouts as $i=>$pout){
  if(isset($t2[1])){
   $appstoreId=$t2[1];
    echo "\n$affid,$name,$appstoreId (".$payout."),$platform, $countries $url";
-
  }  
 }
 }

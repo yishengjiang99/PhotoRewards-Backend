@@ -1,8 +1,8 @@
 <?
 require_once("/var/www/lib/db.class.php");
- $sql="select sum(revenue)/100 as r, unix_timestamp(min(created)) div 3600 * 3600 as t from sponsored_app_installs where created>date_sub(now(), interval 21 day) group by month(created),day(created),hour(created)";
+ $sql="select sum(revenue)/100 as r, unix_timestamp(min(created)) div 3600 * 3600 as t from sponsored_app_installs where created>date_sub(now(), interval 7 day) group by month(created),day(created),hour(created)";
  $rows=db::rows($sql);
- $sql="select count(1) as user, unix_timestamp(min(created)) div 3600 * 3600 as t from appuser where created>date_sub(now(), interval 21 day) and banned=0 and app='picrewards' group by month(created),day(created),hour(created)";
+ $sql="select count(1) as user, unix_timestamp(min(created)) div 3600 * 3600 as t from appuser where created>date_sub(now(), interval 7 day) and banned=0 and app='picrewards' group by month(created),day(created),hour(created)";
  $users=db::rows($sql);
  
  $tc=array();

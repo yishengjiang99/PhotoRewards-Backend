@@ -20,11 +20,11 @@ preg_match_all($link,$ret,$ml);
 preg_match_all($title,$ret,$mt);
 $minpid=30000000;
 foreach($m[2] as $i=>$author){
-$date=date('Y-m-d H:i:s',strtotime(trim($m[1][$i])));
-$pid=$ml[2][$i];
-if($pid<$minpid){
- $minpid=$pid;
-}
+ $date=date('Y-m-d H:i:s',strtotime(trim($m[1][$i])));
+ $pid=$ml[2][$i];
+ if($pid<$minpid){
+  $minpid=$pid;
+ }
 $content=addslashes($m[3][$i]);
 $author= addslashes(trim(preg_replace("/\(<I>(.*?)<\/I>\)/","",$author)));
 $author=preg_replace("/<br><b>Subject:(.*?)/","",$author);

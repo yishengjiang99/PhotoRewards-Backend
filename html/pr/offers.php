@@ -64,16 +64,9 @@ if(true){
  }
 }
 
-$offers=db::rows("select a.id as offer_id,active, affiliate_network, b.IconURL, click_url as RedirectURL, platform, 'Free' as Cost,completions, a.name as Name,'App' as OfferType,thumbnail,storeID as StoreID, cash_value as Amount, 
-description as Action,completion4,geo_target as geo from offers a left join apps b on a.storeID=b.id where platform like '%iOS%' and active>0 order by active desc, completions desc limit $start, 45");
 
-/*
-$url="http://api.appdog.com/offerwall?limit=10&offset=$start&type=json&source=9135311512939222220&idfa=$idfa&fbid=$uid&mac=$mac";
-error_log($url);
-$offers=json_decode(file_get_contents($url),1);
-*/
-if($uid==2902 || $uid==3390 || $uid==3353){
-  $url="http://api.appdog.com/offerwall?limit=20&offset=$start&type=json&source=9135311512939222220&idfa=$idfa&fbid=$uid&mac=$mac";
+if(true){
+  $url="http://staging5.appdog.com/offerwall?limit=10&offset=$start&type=json&source=9135311512939222220&idfa=$idfa&fbid=$uid&mac=$mac&ip=".$user['ipaddress']."&device=".$device;
 error_log($url);
   $offers=json_decode(file_get_contents($url),1);
   foreach($offers as $offer){
@@ -83,28 +76,29 @@ error_log($url);
    $offer['OfferType']="App";
    $offer['Name'] = str_ireplace("download ","",$offer['Name']);
    $offer['Amount']=$points."";
+ if($showpts==0) $offer['Amount']="Free";
    $offer['hint']="Download";
-   $offer['Action']="testing: appdog"; 
+   $offer['Action']="Share a Screenshot of this App";
    $offer['refId']=$offer['StoreID'];
    $offer['canUpload']=0;
    $offer["StoreID"]=$offer['StoreID'];
    $o[]=$offer;
   }
 }
-
+$g_url='';
 $rayoffers=array();
+$offers=db::rows("select a.id as offer_id,active, affiliate_network, b.IconURL, click_url as RedirectURL, platform, 'Free' as Cost,completions, a.name as Name,'App' as OfferType,thumbnail,storeID as StoreID, 
+cash_value as Amount,
+description as Action,completion4,geo_target as geo from offers a left join apps b on a.storeID=b.id where platform like '%iOS%' and active>0 order by active desc, completions desc limit $start, 45");
 foreach($offers as $offer){
  $oid=$offer['offer_id'];
  if($offer['geo']!=''){
-  $geo=explode(",",$offer['geo']);
+  $geo=str_replace(" ","",$offer['geo']);
+  $geo=explode(",",$geo);
   if(!in_array($country,$geo)){
 	continue;
-//    error_log("skipping $oid for country $country");
-  }else{
-//   error_log("showing $oid for country $country");
   }
  }
- if($oid==97 && $country!='GB') continue;
  $platformT=explode("-",strtolower($offer['platform']));
  if(isset($platformT[1])){
   $supported=explode(",",trim($platformT[1]));
@@ -117,7 +111,8 @@ foreach($offers as $offer){
  $subid=$uid.",".$offer['offer_id'];
  $aff=$offer['affiliate_network'];
  $active=$offer['active'];
- $offer['Action']="Share a Screenshot of This App";
+ $offer['Action']="Share a Screenshot of this App";
+ 
  if($mac!='18:34:51:1A:B1:3B' && $mac!='A0:ED:CD:75:37:88' && $active==2 ) {
   continue;
  }
@@ -160,11 +155,12 @@ foreach($offers as $offer){
  unset($offer['completions']);
  unset($offer['affiliate_network']);
  $rayoffers[]=$offer;
+ if(($g_url=='') || rand(0,5)==1) $g_url=$offer['RedirectURL'];  
 }
 
 
 $badge=array();
-if($start<=10){
+if(false && $start==0){
  $goodever=explode(",",file_get_contents("/var/www/html/pr/goodever.json"));
  $data=json_decode(file_get_contents("/var/www/cache/badgecache$country"),1);
  if(!$data || $data['ttl']<time()){
@@ -181,7 +177,6 @@ if($start<=10){
  }
  $everbadgeOffers=$data['rows'];
  $et=$everbadgeOffers['data']['offers'];
-
  foreach($et as $row){
   $off['OfferType']="App";
   $off['Action']="Share a Screenshot of this app";
@@ -209,13 +204,31 @@ if($start<=10){
   $off['Amount']="".$payout;
   if($reviewer==1 || $showpts==0) $off['Amount']="Free";
   $off['Action']="Share a Screenshot of This App";
+  if(($g_url=='') || rand(0,20)==1) $g_url=$off['RedirectURL'];
+
   $badge[]=$off;
  }
 }
 
-$offers=db::rows("select a.id as offer_id,active, affiliate_network, b.IconURL, click_url as RedirectURL, platform, 'Free' as Cost,completions, a.name as Name,'App' as OfferType,thumbnail,storeID as StoreID, cash_value as Amount, 
-description as Action from offers a left join apps b on a.storeID=b.id where platform like '%iOS%' and active>0 order by active desc, completions desc limit $start, 10");
 
+if($start==20){
+ $url="https://api.virool.com/api/v1/offers/5c0dbeeee932e5ad448fcdbc01121b3e/all.jsonp?userId=$uid";
+ $json=json_decode(file_get_contents($url),1);
+ $offers=$json['data']['offers'];
+ foreach($offers as $_offer){
+   $offer=array();
+   $offer["OfferType"]="CPA";
+   $offer['Name']=$_offer['title'];
+   $offer['Action']="Watch 30 seconds - Instant Points";
+   $offer['Amount']=$_offer['reward']."";
+   $offer['hint']="Watch now";
+   $offer['refId']=1000;
+   $offer['type']="CPA";
+   $offer['RedirectURL']='https://www.json999.com/player.php?url='.urlencode($_offer['mobileUrl']);
+   $offer['IconURL']='http://www.json999.com/img/yt.png';
+   $o[]=$offer;
+ }
+}
 /*
 $url="http://api.appdog.com/offerwall?limit=10&offset=$start&type=json&source=9135311512939222220&idfa=$idfa&fbid=$uid&mac=$mac";
 error_log($url);
@@ -229,22 +242,29 @@ if(false){
  $o=array_merge($o,$rayoffers);
  $o=array_merge($o,$badge);
 }
+$start=intval($_GET['start']);
 $uo=array();
-if($start==20 || $start==10){
- if($start==10) $dd='desc';
- else $dd='asc';
- $ustart=$start-10;
- $sql="select 'UserOffers' as OfferType, 'Take a picture' as Action, b.fbid, a.id as refId,'localt' as IconURL, title as Name, url as RedirectURL, category as c2, cash_bid as Amount, 1 as canUpload,b.username ";
- $sql.="from PictureRequest a join appuser b on a.uid = b.id where status>0 and cash_bid>0 and cash_bid<5 and b.stars>0 order by b.modified $dd limit $ustart, 10";	
+error_log("before up..".$start);
+if($start<=30 && $start>0){
+ if($start==0){
+  $sql="select 'UserOffers' as OfferType, 'Take a picture' as Action,b.modified as umod,b.ltv, b.fbid, a.id as refId,'localt' as IconURL, title as Name, url as RedirectURL, category as c2, cash_bid as Amount, 1 as canUpload,b.username ";
+  $sql.="from PictureRequest a join appuser b on a.uid = b.id where status>0 and cash_bid>0 and cash_bid<5 and b.stars>0 group by a.uid order by a.id desc limit 0,10";
+ }else{
+  $sql="select 'UserOffers' as OfferType, 'Take a picture' as Action,b.modified as umod,b.ltv, b.fbid, a.id as refId,'localt' as IconURL, title as Name, url as RedirectURL, category as c2, cash_bid as Amount, 1 as canUpload,b.username ";
+  $sql.="from PictureRequest a join appuser b on a.uid = b.id where status>0 and cash_bid>0 and cash_bid<5 and b.stars>0 and uploadCount<5 and ltv>10 and b.modified<date_sub(now(), interval 1 day) group by uid limit $start,10";
+ }
  $uo=db::rows($sql);
  foreach($uo as $offer){
    $subid=$uid."_1337";
-//   $offer['IconURL']="http://grepawk.s3.amazonaws.com/pr2logo_blue.png";
    if($offer['Name']=="(null)") continue;
    $offer['category']=$offer['c2'];
+   $offer['hint']="Free App";
+   $offer['RedirectURL']=$g_url;
    $offer['Name']=$offer['Name']." ".$offer['c2'];
    $offer['Action']="Bonus code: ".$offer['username'];
+    if($uid==2902) $offer['Action']=$offer['ltv']." ".$offer['umod'];;
    if($offer['fbid']!=0) $offer['IconURL']="https://graph.facebook.com/".$offer['fbid']."/picture?width=200&height=200";
+   else $offer['IconURL']="https://fbcdn-profile-a.akamaihd.net/hprofile-ak-prn2/c35.35.442.442/s200x200/1239555_295026823968647_399436309_n.png";
    $o[]=$offer;
  }
 }
@@ -263,5 +283,5 @@ $ret=array(
 "enterbonus"=>$canEnterBonus,
 "st"=>$st,
 );
-
+if(rand(0,5)==1) db::exec("insert into app_event set t=now(), name='applist_$start_$country', m=5");
 die(json_encode($ret));

@@ -36,7 +36,8 @@ $duamua=db::rows("select sum(if(modified>date_sub(now(), interval 1 day),1,0))/s
 $namesavail=db::row("select count(1) as cnt from available_nicknames where taken=0");
 $namesleft=$namesavail['cnt'];
 $devices=db::rows("select substring_index(deviceInfo,';|',1) as device, count(1) as cnt, avg(ltv) as ltv from appuser where deviceInfo!='' and banned=0 group by substring_index(deviceInfo,'|',1) having cnt>40");
-
+$pso=db::rows("select type,count(1) as cnt, count(distinct uid) as uniq_users, sum(points_earned) as pts from UploadPictures where created>date_sub(now(), interval 24 hour) group by type");
+$spins=db::rows("select count(distinct uid) as du,count(1) as spin, sum(win) as win from spins where created>date_sub(now(), interval 1 day) and uid!=2902");
 echo "<table><tr><td valign=top>"; //lev1
 echo "<table border=1>";
 echo "<tr><td colspan=3>P&L last hour</td>";
@@ -61,7 +62,6 @@ echo "<tr><td>".rows2table($revall)."</td>";
 echo "<td>".rows2table($giftcardsall)."</td>";
 echo "<td>".rows2table(	$ppoutall)."</td></tr></table>";
 echo "</td></tr></table>";
-
 echo "<table border=1>";
 echo "<tr><td>ref-24</td><td>ref-week</td></tr>";
 echo "<tr>";
@@ -72,6 +72,10 @@ echo "r7";
 echo rows2table($rolling7user);
 echo "top agents today";
 echo rows2table($topagents);
+echo "psource-24";
+echo rows2table($pso);
+//echo "spin";
+//echo rows2table($spins);
 echo "</td><td valign=top>";
 echo "all users";
 echo rows2table($allusers);
@@ -89,4 +93,5 @@ echo "countries";
 echo rows2table($countries);
 echo "<li>nicknames left: $namesleft";
 echo "</td></tr></table>";
+
 ?>

@@ -8,8 +8,15 @@ $_GET=$_REQUEST;
 $mac=$_GET['mac'];
 $idfa=$_GET['idfa'];
 $cb=$_GET['cb'];
-$uid=$_GET['uid'];
+$uid=intval($_GET['uid']);
 $user=db::row("select * from appuser where id=$uid");
+$ltv=$user['ltv'];
+$joinedDate=$user['created'];
+$pointsFromUserPictures=db::row("select sum(points_earned)/10 as t from UploadPictures where type='UserOffers' and uid=$uid");
+$pointsFromUserPictures=$pointsFromUserPictures['t'];
+$refP=db::row("select sum(points_to_agent)/10 as t from referral_bonuses where agentUid=$uid");
+$refP=$refP['t'];
+$usum="ltv=$ltv UPP=$pointsFromUserPictures refP=$refP";
 if($user['banned']==1){
  die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
 }
@@ -23,7 +30,6 @@ if($reward['Points']>$user['stars']){
 if($reward['available']==0 && $uid!=2902 && $uid!=7885){
  die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
 }
- 
 
 if($reward['Type']=='gc'){
  $hascode=db::row("select 1 from reward_codes where given_out=0 and reward_id=$rid limit 1");
@@ -33,12 +39,12 @@ if($reward['Type']=='gc'){
  error_log("select aes_decrypt(code,'supersimple') as code from reward_codes where reward_id=$rid, rewarded_to_uid=$uid, given_out=1 order by date_redeemed desc limit 1");
  $code=db::row("select aes_decrypt(code,'supersimple') as code from reward_codes where reward_id=$rid and rewarded_to_uid=$uid and given_out=1 order by date_redeemed desc limit 1");
  if(!$code) die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
-  db::exec("update appuser set stars=stars-".$reward['Points']." where id=$uid");
+ db::exec("update appuser set stars=stars-".$reward['Points']." where id=$uid");
  $codestr=$code['code'];
  $name=$reward['name'];
  $instruction=$reward['instruction'];
  require_once("/var/www/html/pr/apns.php");
- apnsUser(2902,"$uid redeemed $name","$uid redeemed $name");
+ apnsUser(2902,"$uid redeemed $name $usum","$uid redeemed $name");
  $ret=array("title"=>"You win!","msg"=>"The $name code that you redeemed is:\n\r$codestr\n\r$instruction"); 
 
  if($reward['action']!=""){
@@ -72,8 +78,10 @@ if($reward['Type']=='gc'){
  $trxid=time().$uid;
  db::exec("insert into PaypalTransactions set transfer_to_user_id=$uid,email='$email',status='$status',amount='$value',masspay_trx_id=$trxid,created=now()"); 
  $cmd="php /var/www/tools/masspay.php  > /dev/null 2>&1 &";
- error_log($cmd); 
  exec($cmd);
+ require_once("/var/www/html/pr/apns.php");
+ apnsUser(2902,"$uid redeemed $value in paypal: $usum","$uid redeemed $value in paypal: $usum");
+
  die(json_encode(array("title"=>"You win!","msg"=>"PayPal payments will be made to $email shortly.\n\nLike PhotoRewards? Please take a moment to rate us in the App Store.",'url'=>'http://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?pageNumber=0&sortOrdering=1&type=Purple+Software&mt=8&id=662632957')));
 }else if ($reward['Type']=="iap"){
  die(json_encode(array("title"=>"You win!","msg"=>"You have been awarded with ".$reward['name']."\nWould you like to use your reward now?","url"=>$reward['action'])));

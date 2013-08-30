@@ -43,6 +43,7 @@ $message="Discover Apps, Upload Pictures, Earn Giftcards with PhotoRewards";
 $message="Download PhotoRewards from the AppStore and enter my bonus code 'superadmin' for up to 1999 Points";
 echo "\n$message $deviceToken";
 //continue;
+
  $body['aps'] = array(
 	'alert' => $message,
 	'sound' => 'default',

@@ -14,14 +14,14 @@ $xplevel=array(
 
 $levelminbonus=array(
 0=>190,
-1=>210,
-2=>220,
-3=>230,
-4=>260,
-5=>286,
-6=>290,
-7=>310,
-8=>320,
+1=>310,
+2=>320,
+3=>330,
+4=>360,
+5=>386,
+6=>410,
+7=>450,
+8=>500,
 );
 
 $levelmax=array(
@@ -35,6 +35,7 @@ $levelmax=array(
 7=>5000, 
 8=>6000,
 );
+
 $multiplier=2;
 
 function getBonusPoints($myxp){

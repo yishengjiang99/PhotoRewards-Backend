@@ -21,6 +21,10 @@ $type=$_GET['otype'];
 if($type=="DoneApp"){
  $sql="select compressed,shared, title, a.id, type, liked, a.uid, points_earned,username, fbid from UploadPictures a left join appuser b on a.uid=b.id where offer_id='$storeId' 
  and (reviewed=1 OR a.uid=$uid) and points_earned>0 order by a.uid=$uid desc, b.id desc limit 15";
+ if($uid==2902){
+  $sql="select compressed,shared, title, a.id, type, liked, a.uid, points_earned,username, fbid from UploadPictures a left join appuser b on a.uid=b.id where offer_id='$storeId'
+  and points_earned>0 order by a.uid=$uid desc, b.id desc limit 15";
+ }
 }else if($type=="App" && $storeId!=""){
   $sql="select shared, title, a.id, type, liked, a.uid, points_earned,username,compressed, fbid from UploadPictures a left join appuser b on a.uid=b.id where offer_id='$storeId' and (reviewed>=1 OR a.uid=$uid) order by a.uid=$uid desc,
   RAND() limit 10";
@@ -45,7 +49,7 @@ if($sql){
  }
 }
 
-if(count($ret)<1 && $_GET['otype']!="UserOffers" && $storeId!="(null)" && $storeId!="" && $storeId){
+if(count($ret)<3 && $_GET['otype']!="UserOffers" && $storeId!="(null)" && $storeId!="" && $storeId){
  $meta=json_decode(file_get_contents("http://json999.com/appmeta.php?appid=$storeId"),1);
  $screenshots=explode(",",$meta['screenshot']);
  foreach($screenshots as $s){

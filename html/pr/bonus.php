@@ -12,12 +12,14 @@ $banned=$agent['banned'];
 if($agent['id']==9329){
  die(json_encode(array("title"=>"Sorry","msg"=>"Bonus code hit daily limit")));
 }
+
 if(!$agent){
  die(json_encode(array("title"=>"Bonus Code Not Found","msg"=>"Ask your friend for a bonus code.  or search Twitter/Google for #PhotoRewards")));
 }
 
 $user=db::row("select * from appuser where id=$uid");
-if($user['stars']<100 && $code!='destin'){
+
+if($user['stars']<100 || $user['banned']==1){
  die(json_encode(array("title"=>"Sorry","msg"=>"You must have at least 100 Points before you can enter a bonus code! Upload some pictures first")));
 }
 
@@ -32,7 +34,7 @@ $min=$agentXpinfo['minbonus'];
 $max=$agentXpinfo['maxbonus'];
 $bonus=$min;
 for(;$bonus<=$max;$bonus++){
-  if(rand(0,40)<2) break; 
+  if(rand(0,50)<2) break; 
 }
 $agentUid=$agent['id'];
 $joinerUid=$user['id'];
@@ -41,23 +43,29 @@ error_log("select count(distinct(ipAddress)) as ips, avg(ltv), count(1) as cnt f
 $distIps=$arefs['ips'];
 
 $joiners=$arefs['cnt'];
-$points_to_joineer=intval($bonus/2);
-if($joiners>6 && $joiners/$distIps>2.4 && $arefs['avgltv']<2.0){
-  die(json_encode(array("title"=>"Sorry","msg"=>"Bonus code hit daily limit")));
+$points_to_joineer=intval($bonus/3);
+if($user['stars']<100 && $arefs['avgltv']<2.0){
+  die(json_encode(array("title"=>"Sorry","msg"=>"You must have at least 100 Points before you can enter a bonus code! Upload some pictures first")));
 }
+
+if($joiners>2 && $joiners/$distIps>1.5 && $arefs['avgltv']<2.0 && $user['stars']<100){
+  die(json_encode(array("title"=>"Sorry","msg"=>"You must have at least 100 Points before you can enter a bonus code! Upload some pictures first")));
+}
+
 if($agentUid==$joinerUid){
  die(json_encode(array("title"=>"Nope!","msg"=>"You cannot enter your own bonus code! Ask your friends!")));
 }
 if($banned==0){
  db::exec("update appuser set stars=stars+".$bonus." where id=$agentUid");
  db::exec("update appuser set stars=stars+".$points_to_joineer.", has_entered_bonus=1 where id=$joinerUid");
+ db::exec("insert into referral_bonuses set created=now(), agentUid=$agentUid, joinerUid=$joinerUid, points_to_agent=$bonus, points_to_joiner=$points_to_joineer");
+ error_log("insert into referral_bonuses set created=now(), agentUid=$agentUid, joinerUid=$joinerUid, points_to_agent=$bonus, points_to_joiner=$points_to_joineer");
 }
 
 if($joinerUid==2902){
  db::exec("update appuser set has_entered_bonus=0 where id=2902 limit 1");
 }
 
-db::exec("insert into referral_bonuses set created=now(), agentUid=$agentUid, joinerUid=$joinerUid, points_to_agent=$bonus, points_to_joiner=$points_to_joineer");
 error_log("insert into referral_bonuses set created=now(), agentUid=$agentUid, joinerUid=$joinerUid, points_to_agent=$bonus, points_to_joiner=$points_to_joineer");
 $usercode=$user['username'];
 apnsUser($agentUid,"Someone entered your bonus code '$code' for $bonus points!","");

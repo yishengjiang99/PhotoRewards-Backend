@@ -7,7 +7,6 @@ $mac=stripslashes($_GET['mac']);
 $token=stripslashes($_GET['token']);
 $uid=0;
 if(isset($_GET['uid'])) $uid=intval($_GET['uid']);
-
 db::exec("insert ignore into pushtokens set mac_address='$mac', app='$app',token='$token',idfa='$idfa', created=now()");
 echo "1";
 exit;

@@ -2,8 +2,7 @@
 require_once("/var/www/lib/functions.php");
 $ua=$_SERVER['HTTP_USER_AGENT'];
 $reviewer=0;
-if(strpos($ua,"PictureRewards/1.1")!==false){
-
+if(strpos($ua,"PictureRewards/1.2")!==false){
  $reviewer=1;
 }
 
@@ -21,9 +20,22 @@ if(strpos($ua,"PictureRewards/1.2")!==false){
 
 $install=db::row("select * from sponsored_app_installs where uid=$uid and appid=$appId");
 if($install) {
+ $e="canupload_yes";
+ if(time() % 1==0) db::exec("insert into app_event set t=now(), name='$e', m=1");
  die($install['id']."");
 }
 else {
+ $e="canupload_no";
+ if(file_exists("/var/www/cache/tried$uid$appId")){
+   if(!file_exists("/var/www/cache/remind$uid") || rand(0,4)==2){
+    require_once("/var/www/html/pr/apns.php");
+    apnsUser($uid,"Please try some other apps if you've downloaded this one","It can take up to 2 hours for the advertiser to confirm that you tried the app.\n\nPlease wait a bit and try some other apps");
+    touch("/var/www/cache/remind$uid");
+   }
+ }else{
+  touch("/var/www/cache/tried$uid$appId"); 
+ }
+ if(time() % 5==0) db::exec("insert into app_event set t=now(), name='$e', m=5");
  die("no");
 }
 

@@ -75,3 +75,24 @@ if($client_ip=='199.217.118.4') die();
 if($client_ip=='217.150.241.243') die();
     return $client_ip;
 }
+
+function packageApns($deviceToken,$badge,$iam='',$url=''){
+// Create the payload body
+ $body['aps'] = array(
+        'alert' => $badge,
+        'sound' => 'default',
+        'custom_key1'=>'hi',
+        );
+
+ if($iam!=""){
+   $body['aps']['msg']=$iam;
+ }
+ if($url!=''){
+   $body['aps']['url']=$url; 
+ }
+ $payload = json_encode($body);
+ $msg=chr(0) . pack('n', 32) . pack('H*', $deviceToken) . pack('n', strlen($payload)) . $payload;
+
+ return	$msg;
+}
+

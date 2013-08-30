@@ -12,7 +12,7 @@ $fp = stream_socket_client(
         echo "ERROR $errcode: $errstr\n";
         return;
     }
-
+require_once('/var/www/lib/functions.php');
 
     $feedback_tokens = array();
     //and read the data on the connection:
@@ -20,6 +20,10 @@ $fp = stream_socket_client(
         $data = fread($apns, 38);
         if(strlen($data)) {
             $t=unpack("N1timestamp/n1length/H*devtoken", $data);
+$bt=$t['devtoken'];
+echo "update pushtokens set disabled=1 where token='$bt'";
+echo "\n";
+db::exec("update pushtokens set disabled=disabled+1 where token='$bt'");
 echo "\n".json_encode($t);
         }
     }

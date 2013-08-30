@@ -26,7 +26,7 @@ if($dealtype=="DoneApp" || $dealtype=="App"){
         }else{
          db::exec("update sponsored_app_installs set uploaded_picture=1 where id=$refId");
          db::exec("insert into UploadPictures set uid='$uid',refId='$refId',id='$id',offer_id='$offerId', type='$dealtype',title='$title',created=now(), reviewed=0,points_earned=$points");
-       error_log("insert into UploadPictures set uid='$uid',refId='$refId',id='$id',offer_id='$offerId', type='$dealtype',title='$title',created=now(), reviewed=0,points_earned=$points");
+        error_log("insert into UploadPictures set uid='$uid',refId='$refId',id='$id',offer_id='$offerId', type='$dealtype',title='$title',created=now(), reviewed=0,points_earned=$points");
   	$msg="Thanks for uploading this screenshot. It will be reviewed by our editorial staff for Points";
 	}
  }
@@ -42,8 +42,8 @@ if($dealtype=="DoneApp" || $dealtype=="App"){
 else if($dealtype=='UserOffers'){
  $prevUploadedByThisUser=db::row("select * from UploadPictures where refId=$refId and uid=$uid");
  if(!$prevUploadedByThisUser){
-	$recent=db::row("select * from UploadPictures where uid=$uid and created>date_sub(now(), interval 1 minute) and type='UserOffers'");
-	if($recent!=null) die("0|".$id.".jpeg|http://www.json999.com/pr/postPicture.php|Please slow down and upload quality pictures");
+	$recent=db::row("select count(1) as cnt from UploadPictures where uid=$uid and created>date_sub(now(), interval 5 minute) and type='UserOffers'");
+	if($recent['cnt']>4) die("0|".$id.".jpeg|http://www.json999.com/pr/postPicture.php|Please slow down and upload quality pictures");
 	$offer=db::row("select * from PictureRequest where id=$refId");
 	$points=$offer['cash_bid'];
  	$offeringUid=$offer['uid'];
