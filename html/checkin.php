@@ -65,7 +65,7 @@ if($cb=="picrewardsdev" || $cb=="picrewards"){
  }
  $config['nickname']=$nickname;
  $config['fbcaption']="Upload Pictures; Earn Free Rewards";
- $xpinfo=getBonusPoints($user['xp']);
+ $xpinfo=getBonusPoints($user['xp'],$user['country']);
  $config=array_merge($config,$xpinfo);
  $maxbonus=$xpinfo['maxbonus'];
 $longmsg="Download #PhotoRewards from the AppStore and enter my bonus code '$nickname' for up to $maxbonus! Bonus Points.\nPoints can be redeemed for Amazon.com, Starbucks, iTunes, Hulu Plus giftcards or PayPal Cash!";
@@ -75,7 +75,7 @@ $longmsg.=" http://www.json999.com/redirect.php?uid=$uid";
  $config['emailmsg']=$longmsg;
  $config['redirect']="http://www.json999.com/redirect.php?uid=$uid";
  $bidconfig=array(
- "categories"=>explode(",", "#apps,#food,#cars,#youtube,#featurePointsBonusCode,#nature,#party,#swag,#yolo,#family,#beautiful,#ideas"),
+ "categories"=>explode(",", "#apps,#food,#cars,#youtube,#featurePointsBonusCode,#nature,#party,#swag,#yolo,#family,#Animals,#beautiful,#ideas"),
  "bidtiers"=>array(1,2,3),
  // "myNumber"=>"tel://6508046836"
  );

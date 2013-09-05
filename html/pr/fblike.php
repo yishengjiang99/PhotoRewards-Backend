@@ -38,7 +38,7 @@ if(isset($_GET['p'])){
 <li><b>Never miss a double-xp, double-point event again</b>
 <li><b>CLICK 'LIKE' for 20 points</b>
 <div id="fb-root"></div>
-<div class="fb-like-box" data-href="https://www.facebook.com/photorewards" data-width="292" data-show-faces="true" data-header="false" data-stream="true" data-show-border="true"></div>
+<div class="fb-like-box" data-href="https://www.facebook.com/photorewards" data-width="292" data-show-faces="true" data-header="false" data-stream="false" data-show-border="true"></div>
 <script type="text/javascript">
     window.fbAsyncInit = function() {
         FB.init({appId: '146678772188121', status: true, cookie: true, xfbml: true});

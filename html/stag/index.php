@@ -24,7 +24,7 @@ if(isset($_POST['submit_button'])){
    $to="yisheng.jiang@gmail.com";
    $comment=$_POST['text'];
    email($to,"Json999.com support email",$comment,$from);
-  $msg="<div class=success>Thank you for your feedback. Your feedback has been sent to the CEO and his team.</div>";
+   $msg="<div class=success>Thank you for your feedback. Your feedback has been sent to the CEO and his team.</div>";
  }
 }
 ?>

@@ -29,28 +29,36 @@ if($replyTo==3){
      for($i=1;$i<4;$i++){
        $row="";
 	$rwin=0;
+       $lastJ=0;
        for($j=0;$j<3;$j++){
-	 $r=rand(1,3);
+	 if($j==1 && rand(0,1)==0){
+
+		$r=$lastJ;
+	}
+	 else {
+		$r=rand(1,3);
+	}
+         $lastJ=$r;
 	 if($r==3) $r="$";
 	 $row.="[$r]";
        }
-       if($row=="[1][1][1]") $rwin=3;
-       if($row=="[2][2][2]") $rwin=7;
-       if($row=="[$][$][$]") $rwin=24;
-       if($rwin>0) $wint.="\n[You won $rwin points on row $i]";
+       if($row=="[1][1][1]") $rwin=30;
+       if($row=="[2][2][2]") $rwin=70;
+       if($row=="[$][$][$]") $rwin=240;
+       if($rwin>0) $wint.="\n[You won $rwin XP on row $i]";
        $win+=$rwin; $reels.="\n$row";
      }
      if($win>0){ 
- 	db::exec("update appuser set stars=stars+$win where id=$uid");
+ 	db::exec("update appuser set xp=xp+$win where id=$uid");
 	$user=db::row("select * from appuser where id=$uid");
-	$points=$user['stars'];
-        $wint.="\nYou now have $points Points";
+	$xp=$user['xp'];
+        $wint.="\nYou now have $xp Experience Points";
      }else{
 	$wint="\n[Sorry no winning combinations]";
      }
      db::exec("insert into spins set uid=$uid, created=now(),win=$win");
      db::exec("update appuser set stars=stars+$win,tracking=tracking+1 where id=$uid");
-     die(json_encode(array("title"=>"***FREE SLOT MACHINE***","msg"=>"You pull the lever...\nreels start spinning...\n".$reels."\n$wint"."\n$spinleft Spins left for today")));
+     die(json_encode(array("title"=>"***FREE SLOT MACHINE***","msg"=>"You pull the lever...\nreels start spinning...".$reels."$wint"."\n$spinleft Spins left for today")));
   }
   die(json_encode(array("title"=>"***FREE SLOT MACHINE***","msg"=>"Did out understand the msg '$msg'. Reply 'spin' to play!")));
 }
@@ -93,7 +101,12 @@ if(stripos($msg, 'addfriend')!==FALSE){
     die(json_encode(array("title"=>"done","msg"=>"You already friended him/her before.")));
  }
 }
+if($to==2902){
+  $amsg="$fromname says '".urldecode($msg)."'";
+  apnsUser($to,$amsg,"$fromname says '".urldecode($msg)."'");
+}else{
+ apnsUser($to,$amsg,"$fromname says '".urldecode($msg)."'");
 
-apnsUser($to,$amsg,"$fromname says '".urldecode($msg)."'");
+}
 die(json_encode(array("title"=>"done","msg"=>"msg sent!")));
 

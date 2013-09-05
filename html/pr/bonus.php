@@ -29,12 +29,12 @@ if($user['has_entered_bonus']==1){
  die(json_encode(array("title"=>"Oh no!","msg"=>"You had already entered a bonus code.\n\nTell your friends to enter your bonus code '$usercode' for even more points!")));
 }
 
-$agentXpinfo=getBonusPoints($agent['xp']);
+$agentXpinfo=getBonusPoints($agent['xp'],$user['country']);
 $min=$agentXpinfo['minbonus'];
 $max=$agentXpinfo['maxbonus'];
 $bonus=$min;
 for(;$bonus<=$max;$bonus++){
-  if(rand(0,50)<2) break; 
+  if(rand(0,10)<2) break; 
 }
 $agentUid=$agent['id'];
 $joinerUid=$user['id'];

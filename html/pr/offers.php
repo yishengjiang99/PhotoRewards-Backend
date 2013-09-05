@@ -7,6 +7,7 @@ $uid=$_GET['uid'];
 $user=db::row("select * from appuser where id=$uid");
 $xpinfo=getBonusPoints($user['xp']);
 $canEnterBonus = $user['has_entered_bonus'] == 1 ? 0 : 1;
+$ltv=$user['ltv'];
 $st=1;
 $deviceInfo=$user['deviceInfo'];
 $device="iphone";
@@ -32,7 +33,7 @@ $o=array();
 $vcount=$user['visit_count'];
 $fbliked=$user['fbliked'];
 
-if($start==10 ||  ($fbliked==1 && $start==0)){
+if($start==10 && $vcount>1){
  $code=$user['username'];
  $message="Try apps and upload screen shots for more points. 1000 Points = $1 in PayPal Cash, Amazon or iTune Gift Cards";
  $url="https://www.facebook.com/dialog/apprequests?app_id=146678772188121&message=".urlencode($message)."&display=touch&redirect_uri=https://www.json999.com/redirect.php?from=invideDone$uid";
@@ -40,7 +41,7 @@ if($start==10 ||  ($fbliked==1 && $start==0)){
 "refId"=>577,"IconURL"=>"https://fbcdn-profile-a.akamaihd.net/hprofile-ak-prn2/c35.35.442.442/s200x200/1239555_295026823968647_399436309_n.png");
 }
 
-if($start==0 && $vcount>0 && ($fbliked==0 || $uid==2902)){
+if($start==0 && $vcount>1 && $user['fbliked']==0){
   $mid=md5($uid.$idfa."fblikeh");
   $o[]=array("Name"=>"Like us on Facebook","Amount"=>"20","Action"=>"Get real-time updates on offers","canUpload"=>1,"OfferType"=>"CPA",
   "RedirectURL"=>"http://json999.com/pr/fblike.php?uid=$uid&h=$mid","IconURL"=>"https://fbcdn-profile-a.akamaihd.net/hprofile-ak-prn2/c35.35.442.442/s200x200/1239555_295026823968647_399436309_n.png","hint"=>"Go to FB",
@@ -60,36 +61,47 @@ if(true){
     $r['Name']=$offerdb['name'];
     $r['IconURL']=$offerdb['thumbnail'];
   }
+  if(!$r['Name']) $r['Name']="App";
   if($start==0) $o[]=$r;
  }
 }
 
-
+//$dogon=file_get_contents("/var/www/appdog_on");
+//$dogon=trim($dogon);
+$dogmulti=3;
+if($ltv<100) $dogmulti=5;
+$dogoffers=array();
 if(true){
+  //if($device=='ipod') $_device=urlencode("iPod Touch");
+  //else $_device=$device;
   $url="http://staging5.appdog.com/offerwall?limit=10&offset=$start&type=json&source=9135311512939222220&idfa=$idfa&fbid=$uid&mac=$mac&ip=".$user['ipaddress']."&device=".$device;
-error_log($url);
   $offers=json_decode(file_get_contents($url),1);
+  if($start==0 && !$offers){
+    db::exec("insert into app_event set t=now(), name='tj_empty', m=1");
+  }
   foreach($offers as $offer){
    if($offer['OfferType']!="App") continue;
    if($offer['Cost']!="Free") continue; 
-   $points=$offer['Amount']*10;
+   $points=$offer['Payout']*$dogmulti;
+$points=min(500,$points);
    $offer['OfferType']="App";
    $offer['Name'] = str_ireplace("download ","",$offer['Name']);
    $offer['Amount']=$points."";
- if($showpts==0) $offer['Amount']="Free";
+   if($showpts==0) $offer['Amount']="Free";
    $offer['hint']="Download";
    $offer['Action']="Share a Screenshot of this App";
    $offer['refId']=$offer['StoreID'];
    $offer['canUpload']=0;
    $offer["StoreID"]=$offer['StoreID'];
-   $o[]=$offer;
+   unset($offer['Payout']);
+   $dogoffers[]=$offer;
   }
 }
+
 $g_url='';
 $rayoffers=array();
 $offers=db::rows("select a.id as offer_id,active, affiliate_network, b.IconURL, click_url as RedirectURL, platform, 'Free' as Cost,completions, a.name as Name,'App' as OfferType,thumbnail,storeID as StoreID, 
-cash_value as Amount,
-description as Action,completion4,geo_target as geo from offers a left join apps b on a.storeID=b.id where platform like '%iOS%' and active>0 order by active desc, completions desc limit $start, 45");
+cash_value as Amount, description as Action,completion4,geo_target as geo from offers a left join apps b on a.storeID=b.id where platform like '%iOS%' and active>0 order by active desc, completions desc limit $start, 45");
 foreach($offers as $offer){
  $oid=$offer['offer_id'];
  if($offer['geo']!=''){
@@ -158,10 +170,12 @@ foreach($offers as $offer){
  if(($g_url=='') || rand(0,5)==1) $g_url=$offer['RedirectURL'];  
 }
 
-
 $badge=array();
-if(false && $start==0){
- $goodever=explode(",",file_get_contents("/var/www/html/pr/goodever.json"));
+$dogon='on';
+if($start==10){
+ $file="/var/www/html/pr/goodever_".$device.".json";
+ $goodever=explode(",",$file);
+ 
  $data=json_decode(file_get_contents("/var/www/cache/badgecache$country"),1);
  if(!$data || $data['ttl']<time()){
         $everbadge="http://api.everbadge.com/offersapi/offers/json?api_key=9B8yxsmXx7xv7ujVFYJNf1373448697&os=ios&country_code=$country&t=".time();
@@ -193,25 +207,25 @@ if(false && $start==0){
      continue;
   }
    if(!in_array($off['StoreID'],$goodever)){
-      if($vcount<10 || rand(0,7)!=1) { // error_log("giving ".$off['StoreID']." a try");
+      if($vcount<10 || rand(0,3)!=1) { 
          continue;
 	}
+   }else{
+error_log("showing ".$off['StoreID']);
    }
   if($device=="ipod" && stripos($row['description'],"ipod")!==false) continue;
-
   $smap[$off['refId']]=1;
-  $payout=$row['payout']*200;
+  $payout=$row['payout']*400;
   $off['Amount']="".$payout;
   if($reviewer==1 || $showpts==0) $off['Amount']="Free";
   $off['Action']="Share a Screenshot of This App";
   if(($g_url=='') || rand(0,20)==1) $g_url=$off['RedirectURL'];
-
   $badge[]=$off;
  }
 }
 
-
-if($start==20){
+$virool=array();
+if($dogon=="off" && $start<20 && $device=='ipod'){
  $url="https://api.virool.com/api/v1/offers/5c0dbeeee932e5ad448fcdbc01121b3e/all.jsonp?userId=$uid";
  $json=json_decode(file_get_contents($url),1);
  $offers=$json['data']['offers'];
@@ -225,33 +239,32 @@ if($start==20){
    $offer['refId']=1000;
    $offer['type']="CPA";
    $offer['RedirectURL']='https://www.json999.com/player.php?url='.urlencode($_offer['mobileUrl']);
-   $offer['IconURL']='http://www.json999.com/img/yt.png';
-   $o[]=$offer;
+   $offer['IconURL']='http://d1y3yrjny3p2xa.cloudfront.net/video_icon.png';
+   $virool[]=$offer;
  }
 }
-/*
-$url="http://api.appdog.com/offerwall?limit=10&offset=$start&type=json&source=9135311512939222220&idfa=$idfa&fbid=$uid&mac=$mac";
-error_log($url);
-$offers=json_decode(file_get_contents($url),1);
-*/
 
-if(false){
- $o=array_merge($o,$badge);
+if($ltv<100){
+ $o=array_merge($o,$dogoffers);
  $o=array_merge($o,$rayoffers);
+ $o=array_merge($o,$virool);
+ $o=array_merge($o,$badge);
 }else{
  $o=array_merge($o,$rayoffers);
  $o=array_merge($o,$badge);
+ $o=array_merge($o,$dogoffers);
+ $o=array_merge($o,$virool);
 }
+
 $start=intval($_GET['start']);
 $uo=array();
-error_log("before up..".$start);
 if($start<=30 && $start>0){
- if($start==0){
+ if($start==10){
   $sql="select 'UserOffers' as OfferType, 'Take a picture' as Action,b.modified as umod,b.ltv, b.fbid, a.id as refId,'localt' as IconURL, title as Name, url as RedirectURL, category as c2, cash_bid as Amount, 1 as canUpload,b.username ";
-  $sql.="from PictureRequest a join appuser b on a.uid = b.id where status>0 and cash_bid>0 and cash_bid<5 and b.stars>0 group by a.uid order by a.id desc limit 0,10";
+  $sql.="from PictureRequest a join appuser b on a.uid = b.id where status>0 and cash_bid>0 and cash_bid<5 and b.stars>0 and uploadCount<10 group by a.uid order by a.id desc limit 0,10";
  }else{
   $sql="select 'UserOffers' as OfferType, 'Take a picture' as Action,b.modified as umod,b.ltv, b.fbid, a.id as refId,'localt' as IconURL, title as Name, url as RedirectURL, category as c2, cash_bid as Amount, 1 as canUpload,b.username ";
-  $sql.="from PictureRequest a join appuser b on a.uid = b.id where status>0 and cash_bid>0 and cash_bid<5 and b.stars>0 and uploadCount<5 and ltv>10 and b.modified<date_sub(now(), interval 1 day) group by uid limit $start,10";
+  $sql.="from PictureRequest a join appuser b on a.uid = b.id where status>0 and cash_bid>0 and cash_bid<5 and b.stars>0 and uploadCount<15 and ltv>10 and b.modified<date_sub(now(), interval 1 day) group by uid limit $start,10";
  }
  $uo=db::rows($sql);
  foreach($uo as $offer){

@@ -47,7 +47,7 @@ else if($network=='everbadge'){
  if(!$offer) die("nt");
  $storeID=$offer['id']; 
  $name=$offer['Name'];
- $payoutToUser=doubleval($amount)*200;
+ $payoutToUser=doubleval($amount)*400;
 }
 if(!$transID){
  $transID=$subid;
@@ -58,7 +58,7 @@ $payoutToUser=rand(intval($payoutToUser*1), intval($payoutToUser*1));
 if($santa=db::row("select * from sponsored_app_installs where uid=$uid and appid=$storeID and network='santa'")){
  $installid=$santa['id'];
  db::exec("update sponsored_app_installs set Amount=$payoutToUser, network='$network', subid='$subid', created=now(), transactionID='$transID',revenue=$rev,offer_id=$offerID where id=$installid");
- db::exec("update appuser set stars=stars+$payoutToUser where id=$uid");
+ db::exec("update appuser set stars=stars+$payoutToUser,ltv=ltv+$rev where id=$uid");
 
  apnsUser($uid,"You earned $payoutToUser Points for the $name screenshot!","Your earned $payoutToUser Points for the $name screenshot!");
  exit;

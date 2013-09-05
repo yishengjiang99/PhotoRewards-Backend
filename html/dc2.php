@@ -3,12 +3,8 @@ require_once("/var/www/lib/functions.php");
 //if($_GET['pw']!="dafhfadsfkdsadlds") die(0);
 $appid=intval($_GET['appid']);
 $uid=intval($_GET['uid']);
-$user=db::row("select * from appuser where id=$uid");
-$ltv=$user['ltv'];
-$dogmulti=300;
-if($ltv<100) $dogmulti=500;
-$points=$_GET['payout']*$dogmulti;
-$points=min(500,$points);
+$points=$_GET['payout']*400;
+echo $points;
 //dogcb.php?uid=2902&amount=15&appid=468420446&pw=dafhfadsfkdsadlds&payout=0.5
 
 $revenue=doubleval($_GET['payout'])*100;

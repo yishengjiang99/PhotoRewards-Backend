@@ -5,8 +5,8 @@ $uid=intval($_GET['uid']);
 $user=db::row("select * from appuser where id=$uid");
 $ret=array();
 
- $slot=array("From"=>"The Slot Machine","msg"=>"reply 'spin' to play Slots!\nNo purchase necessary. Play 10 times a day FREE. Reply 'terms' for Terms and Conditions.","msg_id"=>3,"from_uid"=>2902,"readmsg"=>0);
-//if($user['ltv']>200) $ret[]=$slot;
+ $slot=array("From"=>"The Slot Machine","msg"=>"reply 'spin' to play Slots!\nNo purchase necessary. Play 10 times a day FREE. Reply 'terms' for Terms and Conditions.","msg_id"=>3,"from_uid"=>2902,"readmsg"=>1);
+if($user['ltv']>100) $ret[]=$slot;
 
 $limit=20;
 if($uid==2902) $limit=200;

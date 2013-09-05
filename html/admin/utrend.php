@@ -2,7 +2,7 @@
 require_once("/var/www/lib/db.class.php");
 $res=3600;
 if(isset($_GET['res'])) $res= intval($_GET['res']);
- $sql="select sum(m) as v, unix_timestamp(t) div $res as t from app_event where t>date_sub(now(), interval 24 hour) and name like 'applist%' group by unix_timestamp(t) div $res";
+ $sql="select sum(m) as v, unix_timestamp(t) div $res * $res as t from app_event where t>date_sub(now(), interval 24 hour) and name like 'applist%' group by unix_timestamp(t) div $res";
  $rows=db::rows($sql); 
 echo $sql;
 ?>

@@ -46,7 +46,6 @@ if($reward['Type']=='gc'){
  require_once("/var/www/html/pr/apns.php");
  apnsUser(2902,"$uid redeemed $name $usum","$uid redeemed $name");
  $ret=array("title"=>"You win!","msg"=>"The $name code that you redeemed is:\n\r$codestr\n\r$instruction"); 
-
  if($reward['action']!=""){
    $url=$reward['action'];
    $url=str_replace("CODE_HERE",$codestr,$url);
@@ -80,7 +79,7 @@ if($reward['Type']=='gc'){
  $cmd="php /var/www/tools/masspay.php  > /dev/null 2>&1 &";
  exec($cmd);
  require_once("/var/www/html/pr/apns.php");
- apnsUser(2902,"$uid redeemed $value in paypal: $usum","$uid redeemed $value in paypal: $usum");
+// apnsUser(2902,"$uid redeemed $value in paypal: $usum","$uid redeemed $value in paypal: $usum");
 
  die(json_encode(array("title"=>"You win!","msg"=>"PayPal payments will be made to $email shortly.\n\nLike PhotoRewards? Please take a moment to rate us in the App Store.",'url'=>'http://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?pageNumber=0&sortOrdering=1&type=Purple+Software&mt=8&id=662632957')));
 }else if ($reward['Type']=="iap"){
