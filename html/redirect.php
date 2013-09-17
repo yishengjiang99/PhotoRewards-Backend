@@ -1,4 +1,24 @@
 <?php
+if(isset($_GET['src'])){
+ $src=$_GET['src'];
+ if($src=='appdog'){
+    setcookie("src", $src,time()+60*60*24*30);
+    setcookie("subid", $_GET['subid'],time()+60*60*24*30);
+    setcookie("registered", "0", time()+60*60*24*30*12);
+     require_once('/var/www/lib/functions.php');
+    $ua=$_SERVER['HTTP_USER_AGENT'];
+    preg_match("/\((.*?) CPU (.*?) OS (.*?) like/", $ua,$m);
+    $device=$m[1];
+    $os=$m[3];
+    $dinfo="$device|$os";
+    $sid=$_GET['subid'];
+    $ipaddress=getRealIP();
+    db::exec("insert into incoming_clicks set subid='$sid', created=now(),deviceInfo='$dinfo',ip='$ipaddress'");
+ }
+ 
+ header("location: https://itunes.apple.com/app/photorewards/id662632957?mt=8");
+ exit;
+}
 if(strpos($_GET['from'],'invideDone')!==false){
  require_once('/var/www/lib/functions.php');
  $rid=$_GET['request'];
@@ -11,7 +31,7 @@ if(strpos($_GET['from'],'invideDone')!==false){
  $avgCnt=db::row("select avg(count) as freq,count(1) as total from fbinvites where uid=$uid");
  if($avgCnt['freq']>2 && $avgCnt['total']>5){
    header("location: picrewards://");
-  exit;
+   exit;
  }
  $cnt=count($to); $xp=5*$cnt;
  foreach($to as $i=>$toid){

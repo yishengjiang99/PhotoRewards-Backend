@@ -31,6 +31,11 @@ if(isset($r['report'])){
  $user=db::row("select * from appuser where id=$uid");
  $username=$user['username'];
  if($username=='superadmin') $username='redcat';
+ $isadmin=0;
+ if($user['role']>0){
+   $isadmin=1;
+   error_log("$uid is admin p.php");
+ }
  db::exec("update UploadPictures set reviewed=-1 where id='$pid'");
  $pic=db::row("select * from UploadPicture where id='$pid'");
  $upuid=$pic['uid'];
@@ -38,7 +43,10 @@ if(isset($r['report'])){
  $cc=$r['complaint'];
  apnsUser($upuid,"$username reported that your picture: $cc","$username reported that your picture: $cc","http://www.json999.com/pr/picture.php?id=$pid");
  apnsUser(2902,"$username reported that your picture is: $cc","$username reported that your picture: $cc","http://www.json999.com/pr/p.php?pid=$pid&uid=$upuid");
-
+ if($isadmin){
+   db::exec("update appuser set role=-1 where id=$upuid");
+   error_log("appuser $upuid banned by $uid");
+ }
  if(false && isset($r['h']) && $r['h']!='' && $r['h']=$h && $uid=$offerer){
 //   db::exec("update appuser set stars=stars-$points where id=$uploader");
 //   db::exec("update appuser set	stars=stars+$points where id=$offerer");

@@ -28,7 +28,7 @@ if(isset($_GET['p'])){
      <meta content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" name="viewport">
     <meta charset="utf-8">
     <title>PhotoRewards On Facebook</title>
-    <link href="/css/bootstrap.css" rel="stylesheet">
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
     </head>
     <body style='max-width:300px;margin-left:auto;margin-right:auto;'>
  <a href='picrewards://' class=btn><h3>Back To PhotoRewards</h3></a>

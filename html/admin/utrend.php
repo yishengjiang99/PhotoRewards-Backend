@@ -1,9 +1,14 @@
 <?
 require_once("/var/www/lib/db.class.php");
 $res=3600;
+$back=24;
+$e="applist";
 if(isset($_GET['res'])) $res= intval($_GET['res']);
- $sql="select sum(m) as v, unix_timestamp(t) div $res * $res as t from app_event where t>date_sub(now(), interval 24 hour) and name like 'applist%' group by unix_timestamp(t) div $res";
- $rows=db::rows($sql); 
+if(isset($_GET['back'])) $back= intval($_GET['back']);
+if(isset($_GET['e'])) $e=$_GET['e'];
+ 
+$sql="select sum(m) as v, unix_timestamp(t) div $res * $res as t from app_event where t>date_sub(now(), interval $back hour) and name like '$e%' group by unix_timestamp(t) div $res";
+$rows=db::rows($sql); 
 echo $sql;
 ?>
 <html>

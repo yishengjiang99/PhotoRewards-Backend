@@ -1,6 +1,4 @@
-
 <?
-
 require_once("/var/www/lib/functions.php");
 $uid=intval($_GET['uid']);
 $refstr=$_GET['refId'];

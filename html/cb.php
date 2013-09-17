@@ -15,6 +15,10 @@ $transID=$_GET['transactionID'];
 if(isset($_GET['sampleid'])){
   $network='admobix';
 }
+$s2="";
+if(isset($st[2])){
+ $s2=$st[2];
+}
 $instantpay=0;
 if($network!='virool' && $network!='everbadge'){
  $offer=db::row("select * from offers where id=$offerID");
@@ -47,8 +51,9 @@ else if($network=='everbadge'){
  if(!$offer) die("nt");
  $storeID=$offer['id']; 
  $name=$offer['Name'];
- $payoutToUser=doubleval($amount)*400;
+ $payoutToUser=doubleval($amount)*200;
 }
+
 if(!$transID){
  $transID=$subid;
 }
@@ -58,19 +63,17 @@ $payoutToUser=rand(intval($payoutToUser*1), intval($payoutToUser*1));
 if($santa=db::row("select * from sponsored_app_installs where uid=$uid and appid=$storeID and network='santa'")){
  $installid=$santa['id'];
  db::exec("update sponsored_app_installs set Amount=$payoutToUser, network='$network', subid='$subid', created=now(), transactionID='$transID',revenue=$rev,offer_id=$offerID where id=$installid");
+ db::exec("update UploadPictures set type='DoneApp' where refId='$installid' limit 1");
  db::exec("update appuser set stars=stars+$payoutToUser,ltv=ltv+$rev where id=$uid");
-
  apnsUser($uid,"You earned $payoutToUser Points for the $name screenshot!","Your earned $payoutToUser Points for the $name screenshot!");
  exit;
 }
- 
-$insert1="insert ignore into sponsored_app_installs set Amount=$payoutToUser, appid=$storeID, uid=$uid, network='$network', offer_id='$offerID', subid='$subid', created=now(),transactionID='$transID',revenue=$rev";
+db::exec("update appuser set ltv=ltv+$rev where id=$uid");
+$insert1="insert ignore into sponsored_app_installs set Amount=$payoutToUser, appid=$storeID, uid=$uid, network='$network', offer_id='$offerID', subid='$subid', created=now(),
+transactionID='$transID',revenue=$rev,sub2='$s2'";
 error_log($insert1);
 db::exec($insert1);
 $installId=db::lastID();
-$insert="insert ignore into offer_completions set amount=$amount, user_id=$uid, network='$network', offer_id='$offerID', subid='$subid', created=now(),transactionID='$transID'";
-db::exec($insert);
-$transid=db::lastID();
 if($network=='virool'){
  $msg="You got $payoutToUser Points! Click Next for another video!";
  db::exec("update appuser set stars=stars+$payoutToUser where id=$uid");
@@ -79,12 +82,13 @@ if($network=='virool'){
    db::exec("update appuser set stars=stars+$payoutToUser where id=$uid");
    $msg="You got $payoutToUser Points for $name!";
    db::exec("update sponsored_app_installs set uploaded_picture=1 where id=$installId");
+}else if ($s2!=''){
+   db::exec("update appuser set stars=stars+$payoutToUser where id=$uid");
+   $msg="You got $payoutToUser Points when your friend downloaded $name!";
+   db::exec("update sponsored_app_installs set uploaded_picture=1 where id=$installId");
 }else{
  $msg="Thanks for trying $name! Share a screenshot for $payoutToUser Points";
 }
 error_log($msg."  ".strlen($msg));
 apnsUser($uid,$msg,"");
-
 echo 1;
-
-

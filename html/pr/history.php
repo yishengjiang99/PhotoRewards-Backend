@@ -18,10 +18,18 @@ $rewards=db::rows($select);
 $select="select concat('Earned Points: ',points_earned) as Reward, 'Shared a picture' as Item,id as picid from UploadPictures where uid=$uid and points_earned>0 order by created desc";
 $pts=db::rows($select);
 
+$refagaent ="select concat(username, \" entered your bonus code\") as Item, concat(points_to_agent,\" points earned\") as Reward 
+from referral_bonuses a join appuser b on a.joinerUid=b.id where agentUid=$uid order by a.created desc";
+
+error_log($refagaent);
+$refagaent=db::rows($refagaent);
+
+
+
 $select="select concat('Earned XP: ',xp) as Reward, event as Item from pr_xp where uid=$uid and xp>0 order by id desc limit 100";
 $xp=db::rows($select);
 
-$select="select concat('Won Slots: ',win) as Reward, 'Points Earned' as Item from spins where uid=$uid and win>0 order by id desc limit 100";
+$select="select concat('Won Slots: ',win) as Reward, 'XP Earned' as Item from spins where uid=$uid and win>0 order by id desc limit 100";
 $slots=db::rows($select);
 
-die(json_encode(array_merge($rm,$rewards,$pts,$xp,$slots)));
+die(json_encode(array_merge($rm,$rewards,$refagaent,$pts,$xp,$slots)));

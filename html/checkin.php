@@ -48,12 +48,6 @@ if($newuser==1 && ($cb=='stockalerts' || $cb=="slide")){
 }
 
 if($cb=="picrewardsdev" || $cb=="picrewards"){
- if($newuser==1){
-   $shamac=sha1($mac);
-   $tapjump="http://sa.jumptap.com/a/conversion?idfa=$idfa&mac_sha1=$shamac&app=com.ragnus.PictureRewards&event=Download&eventId=4045&amount=&currency=&units=1";
-//    exec("curl '$tapjump' > /dev/null 2>&1 &");
-    error_log($tapjump);
-  }
  require_once("/var/www/html/pr/levels.php");
  $nickname=$user['username'];
  if($nickname==''){
@@ -76,14 +70,13 @@ $longmsg.=" http://www.json999.com/redirect.php?uid=$uid";
  $config['redirect']="http://www.json999.com/redirect.php?uid=$uid";
  $bidconfig=array(
  "categories"=>explode(",", "#apps,#food,#cars,#youtube,#featurePointsBonusCode,#nature,#party,#swag,#yolo,#family,#Animals,#beautiful,#ideas"),
- "bidtiers"=>array(1,2,3),
+ "bidtiers"=>array(1,2,3,4),
  // "myNumber"=>"tel://6508046836"
  );
  $deviceInfo=$user['deviceInfo'];
  if($deviceInfo==""){
    $config['um']='y';
    $config['checkup']="http://www.json999.com/deviceInfo.php?uid=$uid&cb=picrewards"; 
-if($uid==2902) $config['checkup']="http://www.json999.com/di2.php?uid=$uid&cb=picrewards";
  }
  $config=array_merge($config,$bidconfig);
 }

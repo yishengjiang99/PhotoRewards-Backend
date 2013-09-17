@@ -8,26 +8,26 @@ $xplevel=array(
 5000=>5,
 10000=>6,
 60000=>7,
-100000000=>8,
-100000000000000=>9,
+100000=>8,
+400000=>9,
 );
 
 $levelminbonus=array(
-0=>90,
-1=>110,
-2=>220,
-3=>260,
-4=>320,
-5=>356,
-6=>410,
-7=>450,
-8=>500,
+0=>20,
+1=>180,
+2=>260,
+3=>360,
+4=>420,
+5=>556,
+6=>610,
+7=>750,
+8=>890,
 );
 
 $levelmax=array(
-0=>350,
-1=>570,
-2=>650,
+0=>50,
+1=>200,
+2=>470,
 3=>1999,
 4=>2000,
 5=>3000,
@@ -36,12 +36,12 @@ $levelmax=array(
 8=>6000,
 );
 
-$multiplier=1.2;
+$multiplier=1.6;
 
 function getBonusPoints($myxp,$country='US'){
  global $xplevel, $levelminbonus, $levelmax,$multiplier;
  if(!$multiplier) $multiplier=1;
- if($country!='US') $multiplier=0.3;
+ if($country!='US' && $country!='CA' && $country!='GB') $multiplier=0.5;
  $mylevel=0;
  $nexttlevel=0;
  $nextmin=0;$nextmax=0;

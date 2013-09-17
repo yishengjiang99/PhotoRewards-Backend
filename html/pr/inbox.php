@@ -4,21 +4,31 @@ require_once("/var/www/lib/firewall.php");
 $uid=intval($_GET['uid']);
 $user=db::row("select * from appuser where id=$uid");
 $ret=array();
+$showslot=$user['tracking']<11;
+$slot=array("From"=>"The Slot Machine","msg"=>"reply 'spin' to play Slots!\nNo purchase necessary. Play 10 times a day FREE. Reply 'terms' for Terms and Conditions.","msg_id"=>3,"from_uid"=>2902,"readmsg"=>!$showslot);
+if($user['ltv']>150) $ret[]=$slot;
 
- $slot=array("From"=>"The Slot Machine","msg"=>"reply 'spin' to play Slots!\nNo purchase necessary. Play 10 times a day FREE. Reply 'terms' for Terms and Conditions.","msg_id"=>3,"from_uid"=>2902,"readmsg"=>1);
-if($user['ltv']>100) $ret[]=$slot;
+$pigeon=array("From"=>"The Pigeon Dood","msg"=>"put @username to msg anyone!","from_uid"=>2902,"msg_id"=>5);
+if($user['ltv']>150) $ret[]=$pigeon;
 
 $limit=20;
-if($uid==2902) $limit=200;
-$inbox=db::rows("select a.*,b.username,ltv, b.created from inbox a join appuser b on a.from_uid = b.id where to_uid=$uid order by a.created desc limit $limit");
-
+if($uid==2902) $limit=20;
+$friendcount=0;
+$inbox=db::rows("select a.*,b.username,ltv, b.created from inbox a join appuser b on a.from_uid = b.id where to_uid=$uid and readmsg!=2 order by a.created desc limit $limit");
 foreach($inbox as $m){
  $fromname="";
  $fromname=$m['username'];
  $msg=urldecode($m['msg']);
- if($uid==2902) $msg=" ".$m['ltv']." ".$m['from_uid'].$msg;
+ if($msg=='addfriend'){
+   $friendcount++;
+   if($friendcount>2) continue;
+ }
+ if($uid==2902) $msg=" ".$m['ltv']." ".$m['from_uid'].": ".$msg;
  if(stripos($msg, 'addfriend')!==FALSE){
     $msg="$fromname added you as a friend. Reply 'addfriend' to add back";
+ }
+ if($m['readmsg']==1 && stripos($msg, 'addfriend')!==FALSE){
+   continue;
  }
  $box=array("From"=>$fromname,"msg"=>$msg,"from_uid"=>$m["from_uid"],"msg_id"=>$m['id'],'readmsg'=>$m['readmsg']);
  if($m['fbid']) $box['fbid']=$m['fbid'];

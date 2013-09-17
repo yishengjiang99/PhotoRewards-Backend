@@ -7,7 +7,9 @@ $user=db::row("select stars,id,username,email from appuser where id=$uid");
 $username=$user['username'];
 $stars=$user['stars'];
 $email=$user['email'];
-$dollar=number_format($stars/1000,2);
+$points=$stars;
+if($stars>=9500) $points=$stars+500;
+$dollar=number_format($points/1000,2);
 ?>
     <!DOCTYPE html>
     <html lang="en">

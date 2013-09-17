@@ -43,8 +43,10 @@ if($reward['Type']=='gc'){
  $codestr=$code['code'];
  $name=$reward['name'];
  $instruction=$reward['instruction'];
+/*
  require_once("/var/www/html/pr/apns.php");
  apnsUser(2902,"$uid redeemed $name $usum","$uid redeemed $name");
+*/
  $ret=array("title"=>"You win!","msg"=>"The $name code that you redeemed is:\n\r$codestr\n\r$instruction"); 
  if($reward['action']!=""){
    $url=$reward['action'];
@@ -62,25 +64,31 @@ if($reward['Type']=='gc'){
     die(json_encode(array("title"=>"Email required","msg"=>"****Further action required****\nClick 'GO' to enter your PayPal email address","url"=>$url)));
  }
  $email=stripslashes($_GET['email']);
+ if(check_email_address($email)===FALSE){
+       error_log("$email is not valid");
+       die(json_encode(array("title"=>"","msg"=>$email." is not a valid email address.")));
+  }
  if($email=="orlando12.12@hotmail.com" || $email=="Orlando12.12@hotmail.com"){
    die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
   }
  db::exec("update appuser set email='$email' where id=$uid");
  $balance=$user['stars'];
  $value=ceil($balance/10);
- $cnt=db::cols("select count(distinct transfer_to_user_id) from PaypalTransactions where created>date_sub(now(), interval 3 day) and email='$email'");
+ if($value>950) $value=$value+50;
+ $cnt=db::cols("select count(distinct transfer_to_user_id) from PaypalTransactions where created>date_sub(now(), interval 6 day) and email='$email'");
  $cntint=$cnt[0];
  error_log("$cntint distinct user paying to $email");
  $status='init';
- if($cntint>3) $status='banned';
+ if($cntint>3) die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
  db::exec("update appuser set stars=0 where id=$uid");
  $trxid=time().$uid;
  db::exec("insert into PaypalTransactions set transfer_to_user_id=$uid,email='$email',status='$status',amount='$value',masspay_trx_id=$trxid,created=now()"); 
  $cmd="php /var/www/tools/masspay.php  > /dev/null 2>&1 &";
  exec($cmd);
+/*
  require_once("/var/www/html/pr/apns.php");
-// apnsUser(2902,"$uid redeemed $value in paypal: $usum","$uid redeemed $value in paypal: $usum");
-
+ apnsUser(2902,"$uid redeemed $value in paypal: $usum","$uid redeemed $value in paypal: $usum");
+*/
  die(json_encode(array("title"=>"You win!","msg"=>"PayPal payments will be made to $email shortly.\n\nLike PhotoRewards? Please take a moment to rate us in the App Store.",'url'=>'http://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?pageNumber=0&sortOrdering=1&type=Purple+Software&mt=8&id=662632957')));
 }else if ($reward['Type']=="iap"){
  die(json_encode(array("title"=>"You win!","msg"=>"You have been awarded with ".$reward['name']."\nWould you like to use your reward now?","url"=>$reward['action'])));
