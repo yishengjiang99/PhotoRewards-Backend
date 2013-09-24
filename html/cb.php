@@ -7,6 +7,12 @@ if(isset($_GET['amount_cents'])){
  $amount=(double)$_GET['amount_cents']/100;
 }
 $network=$_GET['network'];
+if($network=='clicksmob' && getRealIP()!='54.243.133.243'){
+ error_log("BAD IP CALLBACK ".json_encode($_GET));
+}
+if($network=='mobpartner' && getRealIP()!='95.131.138.180'){
+ error_log("BAD IP CALLBACK ".json_encode($_GET));
+}
 $subid=$_GET['subid'];
 $st=explode(",",$subid);
 $uid=intval($st[0]);
@@ -51,7 +57,7 @@ else if($network=='everbadge'){
  if(!$offer) die("nt");
  $storeID=$offer['id']; 
  $name=$offer['Name'];
- $payoutToUser=doubleval($amount)*200;
+ $payoutToUser=doubleval($amount)*100;
 }
 
 if(!$transID){

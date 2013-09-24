@@ -58,7 +58,7 @@ else if($dealtype=='UserOffers'){
 		$points=0;		
 	}else{
   	        db::exec("update appuser set stars=stars-".$points." where id=$offeringUid");
-		db::exec("update appuser set xp=xp+".($points*10)." where id=$offeringUid limit 1");
+		db::exec("update appuser set xp=xp+".($points*20)." where id=$offeringUid limit 1");
 		db::exec("update appuser set stars=stars+".$points." where id=$uid limit 1");
 	}
         $uploadCount=$offer['uploadCount'];

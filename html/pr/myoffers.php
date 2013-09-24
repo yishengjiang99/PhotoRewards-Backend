@@ -12,6 +12,7 @@ $mylist=db::rows($sql);
 $o=array();
 foreach($mylist as $offer){
 // $offer['url']="";
+if($offer['Amount']==0) $offer['Amount']="done";
  $offer['hint']="link";
  $o[]=$offer;
 }

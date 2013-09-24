@@ -1,6 +1,5 @@
 <?php
 $dogon=date('H') >=5 && date('H')<=23;
-$dogon=true;
 require_once("/var/www/lib/functions.php");
 require_once("/var/www/html/pr/levels.php");
 $idfa=$_GET['idfa'];
@@ -12,6 +11,7 @@ $src=$user['source'];
 $xpinfo=getBonusPoints($user['xp']);
 $canEnterBonus = $user['has_entered_bonus'] == 1 ? 0 : 1;
 $ltv=$user['ltv'];
+if($ltv<800) $dogon=true;
 $st=1;
 $deviceInfo=$user['deviceInfo'];
 $device="iphone";
@@ -21,8 +21,13 @@ if(stripos($deviceInfo,"ipod")!==false){
 if(stripos($deviceInfo,"ipad")!==false){
  $device='ipad';
 }
+$osVersion="6.1";
+if(stripos($deviceInfo,"7_")!==false || $mac=="ios7device"){
+ $osVersion="7.0";
+}
+
 $country='US';
-if(isset($user['country']) && $user['country']!='' && $user['country']!='VN'){
+if(isset($user['country']) && $user['country']!=''){ // && $user['country']!='VN'){
  $country=$user['country'];
 }
 $ua=$_SERVER['HTTP_USER_AGENT'];
@@ -36,22 +41,29 @@ if(!$start) $start=0;
 $o=array();
 $vcount=$user['visit_count'];
 $fbliked=$user['fbliked'];
-
+if($country=='CA') $dogon=true;
 if($start==10 && $vcount>1){
  $code=$user['username'];
  $message="Try apps and upload screen shots for more points. 1000 Points = $1 in PayPal Cash, Amazon or iTune Gift Cards";
  $url="https://www.facebook.com/dialog/apprequests?app_id=146678772188121&message=".urlencode($message)."&display=touch&redirect_uri=https://www.json999.com/redirect.php?from=invideDone$uid";
- $o[]=array("Name"=>"Invite Friends for XP","Amount"=>"XP","Action"=>"5 XP for each friend", "hint"=>"Invite Friends","canUpload"=>1,"OfferType"=>"CPA","RedirectURL"=>$url, "refId"=>577,"IconURL"=>"https://fbcdn-profile-a.akamaihd.net/hprofile-ak-prn2/c35.35.442.442/s200x200/1239555_295026823968647_399436309_n.png");
+ $o[]=array("Name"=>"Invite Friends for XP","Amount"=>"XP","Action"=>"5 XP for each friend", "hint"=>"Invite Friends","canUpload"=>1,
+"OfferType"=>"CPA","RedirectURL"=>$url, "refId"=>577,
+"IconURL"=>"https://fbcdn-profile-a.akamaihd.net/hprofile-ak-prn2/c35.35.442.442/s200x200/1239555_295026823968647_399436309_n.png");
 }
-
-if($start==0 && $vcount>1 && $user['fbliked']==0){
+if($start==0 && $user['fbid']==0){
+ $cb="https://www.json999.com/pr/fblogin2.php?uid=$uid&idfa=$idfa";
+ $url="https://www.facebook.com/dialog/oauth?response_type=code&client_id=146678772188121&scope=email&redirect_uri=".urlencode($cb);
+ $o[]=array("Name"=>"Login with Facebook","Amount"=>"20","Action"=>"Earn 20 points", "hint"=>"Login with FB","canUpload"=>1,
+"OfferType"=>"CPA","RedirectURL"=>$url, "refId"=>600,"IconURL"=>"http://json999.com/img/facebook_logo.png");
+}
+if($start==10 && $user['fbid']!=0 && $user['fbliked']==0){
   $mid=md5($uid.$idfa."fblikeh");
-  $o[]=array("Name"=>"Like us on Facebook","Amount"=>"20","Action"=>"Get real-time updates on offers","canUpload"=>1,"OfferType"=>"CPA",
-  "RedirectURL"=>"http://json999.com/pr/fblike.php?uid=$uid&h=$mid","IconURL"=>"https://fbcdn-profile-a.akamaihd.net/hprofile-ak-prn2/c35.35.442.442/s200x200/1239555_295026823968647_399436309_n.png","hint"=>"Go to FB",
+  $o[]=array("Name"=>"Like us on Facebook","Amount"=>"10","Action"=>"Get real-time updates on offers","canUpload"=>1,"OfferType"=>"CPA",
+  "RedirectURL"=>"http://json999.com/pr/fblike.php?uid=$uid&h=$mid","IconURL"=>"http://json999.com/img/facebook_logo.png","hint"=>"Go to FB",
   "refId"=>577);
 }
 
-if($uid==2902 && $start==0){
+if(false && $uid==2902 && $start==0){
    $mid=md5($uid.$idfa."fblikehaa");
   $o[]=array("Name"=>"Share Apps","Amount"=>"$$","Action"=>"Earn points when your friends download!","canUpload"=>1,"OfferType"=>"CPA",
   "RedirectURL"=>"http://json999.com/pr/p22.php?uid=$uid&h=$h2","IconURL"=>"https://fbcdn-profile-a.akamaihd.net/hprofile-ak-prn2/c35.35.442.442/s200x200/1239555_295026823968647_399436309_n.png",
@@ -79,11 +91,14 @@ if(true){
  }
 }
 //if($ltv>200) $dogon=false;
-$dogmulti=2;
-if($ltv<100) $dogmulti=4;
+$dogmulti=4;
+if($ltv<200) $dogmulti=6;
 $dogoffers=array();
 if($dogon){
-  $url="http://api.appdog.com/offerwall?limit=10&offset=$start&type=json&source=9135311512939222220&idfa=$idfa&fbid=$uid&mac=$mac&ip=".$user['ipaddress']."&device=".$device;
+  $url="http://staging5.appdog.com/offerwall?limit=10&offset=$start&type=json&source=9135311512939222220&idfa=$idfa&fbid=$uid&ip=".$user['ipaddress']."&device=".$device."&os=$osVersion";
+  if($mac!="ios7device"){
+	$url=$url."&mac=$mac";
+  }
   $offers=json_decode(file_get_contents($url),1);
   if($start==0 && !$offers){
     db::exec("insert into app_event set t=now(), name='tj_empty', m=1");
@@ -92,12 +107,13 @@ if($dogon){
    if($offer['OfferType']!="App") continue;
    if($offer['Cost']!="Free") continue; 
    $points=$offer['Payout']*$dogmulti;
-   $points=min(500,$points);
-//   if($points<20) continue;
+   $points=min(300,$points);
+   if($country=='US' && $device!='ipod' && $points<40) continue;
    $offer['OfferType']="App";
+  
    $offer['Name'] = str_ireplace("download ","",$offer['Name']);
    $offer['Amount']=$points."";
-   if($showpts==0) $offer['Amount']="Free";
+   //if($showpts==0) $offer['Amount']="Free";
    $offer['hint']="Download";
    $offer['Action']="Share a Screenshot of this App";
    $offer['refId']=$offer['StoreID'];
@@ -110,10 +126,12 @@ if($dogon){
 
 $g_url='';
 $rayoffers=array();
-$offers=db::rows("select a.id as offer_id,active, affiliate_network, b.IconURL, click_url as RedirectURL, platform, 'Free' as Cost,completions, a.name as Name,'App' as OfferType,thumbnail,storeID as StoreID, 
+$offers=db::rows("select a.id as offer_id,active, affiliate_network, b.IconURL, click_url as RedirectURL, platform, 'Free' as Cost, dailylimit,completions, a.name as Name,'App' as OfferType,thumbnail,storeID as StoreID, 
 cash_value as Amount, a.description as Action,completion4,geo_target as geo from offers a left join apps b on a.storeID=b.id where platform like '%iOS%' and active>0 order by active desc, completions desc limit $start, 45");
 foreach($offers as $offer){
- if($offer['dailylimit']!=0 && $offer['dailylimit']>$offer['completions']) continue;
+ $dl =intval($offer['dailylimit']);
+ $cl=intval($offer['completions']);
+ if($dl!=0 && $dl<=$cl) continue;
  $oid=$offer['offer_id'];
  if($offer['geo']!=''){
   $geo=str_replace(" ","",$offer['geo']);
@@ -151,7 +169,7 @@ foreach($offers as $offer){
  if(!$offer['IconURL']) $offer['IconURL']=$offer['thumbnail'];
  $completions=intval($offer['completion4']);
  if($completions<1 && $active!=5){
-  //if($vcount<5 || rand(0,10)<3) continue;
+   if($vcount<5 || rand(0,10)<3) continue;
  }
 
  $offer['Amount']=$points."";
@@ -179,9 +197,7 @@ foreach($offers as $offer){
    $offer['OfferType']="CPA";
    $offer['RedirectURL']="http://json999.com/pr/p22.php?uid=$uid&oid=".$offer['offer_id']."&h=$h2";
  }
-
  $smap[$offer['refId']]=1;
-
  unset($offer['completions']);
  unset($offer['affiliate_network']);
  unset($offer['geo']);
@@ -191,10 +207,9 @@ foreach($offers as $offer){
 }
 
 $badge=array();
-
 $badgepage=0;
 if($dogon) $badgepage=10;
-if(($start==20 && $ltv>500) || (!$dogon && $start==$badgepage)){
+if($country!='VN' && $user['banned']!=1 && ($start==20 && $ltv>400) || (!$dogon && $start==$badgepage)){
  $file="/var/www/html/pr/goodever_".$device.".json";
  $goodever=explode(",",file_get_contents($file)); 
  $data=json_decode(file_get_contents("/var/www/cache/badgecache$country"),1);
@@ -224,7 +239,8 @@ if(($start==20 && $ltv>500) || (!$dogon && $start==$badgepage)){
   $off['hint']="Free App";
   $off['Name']=$row['public_name'];
   $off['refId']=$preview[1];
-  $pts=$row['payout']*300;
+  $pts=$row['payout']*100;
+ // $off['refId']=888;
   $off['Action']="Earn ".$pts." for each friend who download!";
   $off['hint']="Tell Friends";
   $off['OfferType']="CPA";
@@ -233,22 +249,20 @@ if(($start==20 && $ltv>500) || (!$dogon && $start==$badgepage)){
      continue;
   }
   if(!in_array($off['StoreID'],$goodever)){
-      if($vcount<10 || rand(0,3)!=1) { 
+      if($vcount<10 || rand(0,2)!=1) { 
          continue;
 	}
   }
   $off['Amount']=$pts."";
-
   if($device=="ipod" && stripos($row['description'],"ipod")!==false) continue;
   $smap[$off['refId']]=1;
-  $off['refId']=888;
   if($reviewer==1 || $showpts==0) $off['Amount']="Free";
   $badge[]=$off;
  }
 }
 
 $virool=array();
-if($uid==2902 || $start==10 && (!$dogon || $device=='ipod')){
+if($start==10 && (!$dogon || $device=='ipod')){
  $url="https://api.virool.com/api/v1/offers/5c0dbeeee932e5ad448fcdbc01121b3e/all.jsonp?userId=$uid";
  $json=json_decode(file_get_contents($url),1);
  $offers=$json['data']['offers'];
@@ -270,7 +284,7 @@ if($country!="US"){
   $o=array_merge($o,$dogoffers);
   $o=array_merge($o,$badge);
   $o=array_merge($o,$virool);
-  //$o=array_merge($o,$rayoffers);
+  $o=array_merge($o,$rayoffers);
 }
 else if($source=='appdog'){
   $o=array_merge($o,$rayoffers);
@@ -278,9 +292,9 @@ else if($source=='appdog'){
   $o=array_merge($o,$virool);
   $o=array_merge($o,$badge);
 }
-else if($ltv<100){
+else if($ltv<200){
  $o=array_merge($o,$dogoffers);
-// $o=array_merge($o,$rayoffers);
+ $o=array_merge($o,$rayoffers);
  $o=array_merge($o,$virool);
  $o=array_merge($o,$badge);
 }else{
@@ -292,13 +306,18 @@ else if($ltv<100){
 
 $start=intval($_GET['start']);
 $uo=array();
+$isadmin=0;
+if($user['role']>0){
+ $isadmin=1;
+}
 $ustartpage=10;
 if(!$dogon) $ustartpage=0;
 if($start<30 && $start>=$ustartpage){
   $ustart=$start-$ustartpage;
   $cpcount="";
   $sql="select 'UserOffers' as OfferType, 'Take a picture' as Action,b.modified as umod,b.ltv, b.fbid, a.id as refId,'localt' as IconURL, title as Name, url as RedirectURLU, uploadCount, category as c2, cash_bid as Amount, 1 as canUpload,b.username ";
-  $sql.="from PictureRequest a join appuser b on a.uid = b.id where status>0 and cash_bid>0 and cash_bid<5 and b.stars>0 and uploadCount<10 and a.title!='(null)' and b.banned=0 $cpcount order by a.id desc limit $ustart,10";
+  $sql.="from PictureRequest a join appuser b on a.uid = b.id where status>0 and cash_bid>0 and cash_bid<5 and b.stars>0 and uploadCount<15";
+  $sql.=" and a.title!='(null)' and b.banned!=5 order by a.id desc limit $ustart,10";
   $uo=db::rows($sql);
   foreach($uo as $offer){
    $subid=$uid."_1337";
@@ -308,11 +327,17 @@ if($start<30 && $start>=$ustartpage){
         $offer['hint']="Details";
         $offer['RedirectURL']=$offer['RedirectURLU'];
    }
+   if($isadmin==1){
+        $offer['hint']="Ban this";
+        $h=md5($offer['refId']."adsbdds");
+        $offer['RedirectURL']="http://www.json999.com/pr/banlist.php?ref=".$offer['refId']."&h=$h";
+   } 
    $uploads=$offer['uploadCount'];
    $offer['Name']=$offer['Name']." ".$offer['c2'];
    $offer['Action']="$uploads pictures uploaded";
    if($offer['fbid']!=0) $offer['IconURL']="https://graph.facebook.com/".$offer['fbid']."/picture?width=200&height=200";
    else $offer['IconURL']="http://d1y3yrjny3p2xa.cloudfront.net/blankfb.jpeg";
+   
    unset($offer['RedirectURLU']);
    unset($offer['ltv']);
    unset($offer['umod']);

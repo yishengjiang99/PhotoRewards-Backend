@@ -4,6 +4,11 @@ require_once("/var/www/html/pr/apns.php");
 $_GET=$_REQUEST;
 $to=intval($_GET['toUid']);
 $from =intval($_GET['from']);
+
+if($from==14297 || $from==14266){
+     die(json_encode(array("title"=>"Not sent","msg"=>"Your msg was spam")));
+
+}
 $uid=$from;
 $msg=stripslashes($_GET['msg']);
 if($msg==""){
@@ -28,8 +33,9 @@ if($replyTo==5){
     die(json_encode(array("title"=>"***The PIGEON Dood***","msg"=>"Add an @ in front a username to send a msg to that username")));
   }
 }
+
 if($msg=="delete" || $msg=="Delete"){
-  db::exec("update inbox set readmsg=2 where id=$replyTo and to_uid=$to limit 1");  
+  db::exec("update inbox set readmsg=2 where id=$replyTo limit 1");  
   error_log("update inbox set readmsg=2 where id=$replyTo and to_uid=$to limit 1");
   die(json_encode(array("title"=>"***MSG MACHINE***","msg"=>"Msg Deleted")));
 }

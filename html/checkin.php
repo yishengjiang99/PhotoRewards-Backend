@@ -6,17 +6,24 @@ if($ip=="92.99.115.76")	die();
 $mac=$_GET['mac'];
 $idfa=$_GET['idfa'];
 $cb=$_GET['cb'];
-if($mac=='ios7device'){
- $user=db::row("select * from appuser where app='$cb' and mac='$mac' and idfa='$idfa'");
+
+if($mac!='ios7device'){
+  $user=db::row("select * from appuser where app='$cb' and mac='$mac' and idfa='$idfa' order by id limit 1");
+//  error_log(json_encode($user));
 }else{
- $user=db::row("select * from appuser where app='$cb' and mac='$mac' order by id limit 1");
+ $user=db::row("select * from appuser where app='$cb' and idfa='$idfa' order by id limit 1");
+ if($user['idfa']!=$idfa){
+   $uid=$user['id'];
+   db::exec("update appuser set idfa='$idfa' where id=$uid");
+ }
 }
+
 $newuser=0;
 if(!$user){
   $newuser=1;
   db::exec("insert into appuser set ipaddress='$ip', app='$cb', mac='$mac',created=now(),modified=now(),idfa='$idfa'");
-  $user=db::row("select * from appuser where app='$cb' and mac='$mac'");
-  $uid=$user['id'];
+  $uid=db::lastID();
+  $user=db::row("select * from appuser where id=$uid");
 }else{
  $uid=$user['id'];
  db::exec("update appuser set modified=now(),ipaddress='$ip', visit_count=visit_count+1,idfa='$idfa' where id=$uid");
@@ -69,8 +76,8 @@ $longmsg.=" http://www.json999.com/redirect.php?uid=$uid";
  $config['emailmsg']=$longmsg;
  $config['redirect']="http://www.json999.com/redirect.php?uid=$uid";
  $bidconfig=array(
- "categories"=>explode(",", "#apps,#food,#cars,#youtube,#featurePointsBonusCode,#nature,#party,#swag,#yolo,#family,#Animals,#beautiful,#ideas"),
- "bidtiers"=>array(1,2,3,4),
+ "categories"=>explode(",", "#apps,#food,#cars,#People,#youtube,#featurePointsBonusCode,#nature,#party,#swag,#yolo,#family,#Animals,#beautiful,#ideas,#sleep,#pillow,#fun"),
+ "bidtiers"=>array(1,2,3,4,5,10,20),
  // "myNumber"=>"tel://6508046836"
  );
  $deviceInfo=$user['deviceInfo'];

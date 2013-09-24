@@ -5,12 +5,12 @@ $uid=intval($_GET['uid']);
 $user=db::row("select * from appuser where id=$uid");
 $ret=array();
 $showslot=$user['tracking']<11;
+$showslot=0;
 $slot=array("From"=>"The Slot Machine","msg"=>"reply 'spin' to play Slots!\nNo purchase necessary. Play 10 times a day FREE. Reply 'terms' for Terms and Conditions.","msg_id"=>3,"from_uid"=>2902,"readmsg"=>!$showslot);
 if($user['ltv']>150) $ret[]=$slot;
 
-$pigeon=array("From"=>"The Pigeon Dood","msg"=>"put @username to msg anyone!","from_uid"=>2902,"msg_id"=>5);
+$pigeon=array("From"=>"The Pigeon Dood","msg"=>"put @username to msg anyone!","readmsg"=>1,"from_uid"=>2902,"msg_id"=>5);
 if($user['ltv']>150) $ret[]=$pigeon;
-
 $limit=20;
 if($uid==2902) $limit=20;
 $friendcount=0;

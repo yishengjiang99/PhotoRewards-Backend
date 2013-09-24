@@ -1,7 +1,9 @@
 <?php
 
 require_once('/var/www/html/pr/apns.php');
+for($i=0;$i<100;$i++){
 _apnshUser(2902,'dd*()','(()','ddd');
+}
 exit;
 if($row=db::row("select * from appuser where id=200002")){
 echo 'yes';

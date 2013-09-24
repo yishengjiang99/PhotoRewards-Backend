@@ -9,13 +9,11 @@ require_once("/var/www/lib/functions.php");
  if($country){
    $countrystr=$country['countrySHORT'];
  }
-
 $ua=$_SERVER['HTTP_USER_AGENT'];
 preg_match("/\((.*?) CPU (.*?) OS (.*?) like/", $ua,$m);
 $device=$m[1];
 $os=$m[3];
 $dinfo="$device|$os";
-
 $src="";
 if(isset($_COOKIE['src'])){
         $src=$_COOKIE['src'];

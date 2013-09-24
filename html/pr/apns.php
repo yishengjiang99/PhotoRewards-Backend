@@ -12,9 +12,9 @@ if(isset($argv[1])){
 function apnsUser($uid,$badge,$iam="",$url=""){
  $badge=urlencode($badge);
  $iam=urlencode($iam);
-$url=urlencode($url);
+ $url=urlencode($url);
  $cmdstr= "php /var/www/html/pr/apns.php ".$uid."432".$badge."432".$iam."432".$url." > /dev/null 2>&1 &";
-error_log($cmdstr);
+// error_log($cmdstr);
  exec($cmdstr);
 }
 
@@ -22,7 +22,7 @@ function _apnshUser($uid, $badge, $iam="", $url=""){
  $token=db::row("select a.token from pushtokens a join appuser b on a.idfa=b.idfa where b.id=$uid and a.app='picrewards' order by a.id desc limit 1");
  $tokenstr=$token['token'];
  $deviceToken=$tokenstr;
- error_log("UID $uid token $badge $deviceToken");
+// error_log("UID $uid token $badge $deviceToken");
  $passphrase='prpr';
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -1,5 +1,8 @@
 <?php
 require_once("/var/www/lib/functions.php");
+if(getRealIP()!="192.145.233.214"){
+error_log("BAD IP CALLBACK EVERBADGE".getRealIP());
+}
 $offerid=intval($_GET['offer_id']);
 $subid=$_GET['uid'];
 $st=explode(",",$subid);

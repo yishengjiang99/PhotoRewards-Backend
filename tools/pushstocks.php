@@ -49,7 +49,6 @@ foreach($ticker as $t){
      }
    }
  }
-echo "\n$t";
 }
 
 function sendTokenMsg($deviceToken,$message){

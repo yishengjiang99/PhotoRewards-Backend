@@ -16,7 +16,6 @@ if($uid>0 && $h){
 }
 
 $uid=$authuid;
-//$uid=intval($_GET['uid']);
 
 $newuser=1;
 
@@ -34,24 +33,23 @@ if($uid>0 && !isset($_COOKIE['tutshown'])){
 $pic=null;
 if(isset($r['pid'])){
  $pid=stripslashes($r['pid']);
- $pic=db::row("select a.id as pid,a.points_earned, b.cash_value as up, a.uid, b.click_url, b.id as oid, b.thumbnail,b.storeID,b.name,b.affiliate_network from UploadPictures a join offers b 
-  on a.offer_id=b.storeID where a.id='$pid' and active=1");
+ $pic=db::row("select compressed,a.id as pid,a.points_earned, b.cash_value as up, a.uid, b.click_url, b.id as oid, b.thumbnail,b.storeID,b.name,b.affiliate_network from UploadPictures a join offers b 
+  on a.offer_id=b.storeID where a.id='$pid' and active>0");
 }
 
 if(!$pic && isset($r['appid']) && isset($r['network'])){
   $appid=intval($r['appid']);
-  $sql="select a.id as pid,a.points_earned, b.cash_value as up, a.uid, b.click_url, b.id as oid, b.thumbnail,b.storeID,b.name,b.id as offer_id,b.affiliate_network 
+  $sql="select a.id as pid,a.points_earned, compressed,b.cash_value as up, a.uid, b.click_url, b.id as oid, b.thumbnail,b.storeID,b.name,b.id as offer_id,b.affiliate_network 
   from UploadPictures a join offers b on b.storeID=a.offer_id where b.storeID=$appid and b.active>0 and b.affiliate_network='everbadge' and a.reviewed>=0 order by a.uid=$uid desc limit 1";
   $pic=db::row($sql);
 }
 if(!$pic && isset($r['oid'])){
    $oid=intval($r['oid']);
-   $pic=db::row("select a.id as pid,a.points_earned, b.cash_value as up, a.uid, b.click_url, b.id as oid, b.thumbnail,b.storeID,b.name,b.id as offer_id,b.affiliate_network 
-from UploadPictures a join offers b on a.offer_id=b.storeID where b.id=$oid and b.active>0 and a.reviewed>=0 order by a.uid=$uid desc limit 1");
+   $pic=db::row("select a.id as pid,a.points_earned, compressed, b.cash_value as up, a.uid, b.click_url, b.id as oid, b.thumbnail,b.storeID,b.name,b.id as offer_id,b.affiliate_network from UploadPictures a join offers b on a.offer_id=b.storeID where b.id=$oid and b.active>0 and a.reviewed>=0 order by a.uid=$uid desc limit 1");
 }
 
 if(!$pic){
- $pic=db::row("select a.id as pid,a.points_earned, cash_value as up, a.uid, b.click_url, b.id as oid, b.thumbnail,b.storeID,b.name,b.affiliate_network from UploadPictures a join offers b on a.offer_id=b.storeID
+ $pic=db::row("select a.id as pid,a.points_earned, cash_value as up,compressed, a.uid, b.click_url, b.id as oid, b.thumbnail,b.storeID,b.name,b.affiliate_network from UploadPictures a join offers b on a.offer_id=b.storeID
   where b.active>0 and a.reviewed>=0 order by RAND() limit 1");
  $pid=$pic['pid'];
 }
@@ -59,8 +57,8 @@ if(!$pic){
 $clicklink="";
 $e_msg="";
 if($r['o']=='liked'){
-  if($r['h']==md5($uid.$pid."asdfadss") && $uid>0){
-    if($user['fbid']==0 && isset($r['post_id'])){
+  if($uid>0){
+    if($user && $user['fbid']==0 && isset($r['post_id'])){
          $pt=explode("_",$r['post_id']);
          $fbid=intval($pt[0]);
          if($fbid>0) db::exec("update appuser set fbid=$fbid where id=".$user['id']);
@@ -96,7 +94,7 @@ if($r['o']=='liked'){
   if($uid==0){
      $e_msg="Please download PhotoRewards and earn points for sharing Photos";
   }
-  $pic=db::row("select a.id as pid,cash_value as up, a.points_earned, a.uid, b.click_url, b.id as oid, b.thumbnail,b.storeID,b.name,b.affiliate_network from UploadPictures a join offers b on a.offer_id=b.storeID 
+  $pic=db::row("select a.id as pid,compressed,cash_value as up, a.points_earned, a.uid, b.click_url, b.id as oid, b.thumbnail,b.storeID,b.name,b.affiliate_network from UploadPictures a join offers b on a.offer_id=b.storeID 
 where b.active>0 and a.reviewed>=0 order by RAND() limit 1");
   $pid=$pic['pid'];
 }
@@ -104,6 +102,7 @@ where b.active>0 and a.reviewed>=0 order by RAND() limit 1");
 $points_earned=0;
 $clicklink="";
 $name="";
+$dir="";
 if($pic){
  $pid=$pic['pid'];
  $clicklink=$pic['click_url'];
@@ -119,7 +118,8 @@ if($pic){
  }
  $clicklink=str_replace("SUBID_HERE",$subid,$clicklink);
  error_log("click link ".$clicklink);
-
+ $dir="";
+ if($pic['compressed']==5) $dir="arch/";
  $clicklink=bitlyLink($clicklink);
  $name=$pic['name'];
  $points_earned=$pic['points_earned'];
@@ -197,20 +197,21 @@ padding:20px;
 <?php }else {?>
   <a class=btn href='https://itunes.apple.com/app/id662632957?mt=8'>Get PhotoRewards Now</a>
 <?php }?>
-<p><b><?php echo "<a href='$clicklink'>$title</a>" ?></b></p>
-<br><center><img height=180px align=middle src='http://json999.com/pr/uploads/<?php echo $pid?>.jpeg'></center>
+<br><center><b><?php echo "<a href='$clicklink'>$title</a>" ?></b></center>
+<center><?php echo "<a href='$clicklink'>" ?><img height=180px align=middle src='http://json999.com/pr/uploads/<?php echo $dir.$pid?>.jpeg'></a></center>
 <?php if($uid>0){
- echo "<br><b>Share this app with your friends!<br>Earn $extra points for each download!";
+ echo "<b>Share this app with your friends!<br>Earn $extra points for each download!";
  echo "<p>Direct Link: <br><a href=$clicklink>$clicklink</a></p>";
  echo "<p><a href=$publish>Share on Facebook</a>";
  echo "<p><a href=$tweet>Tweet</a>";
+// echo "<p><a href='sms:?body=".urlencode($tweetmsg." ".$clicklink)."'>Send SMS</a>";
 }else{
  echo "<p>$title - Free App<br><a href=$clicklink><img width=150 src=http://www.castlen.com/elements/App-Store-Badge.png></a></p>";
 }?>
 <div style='clear:both;position:relative;bottom:2px'>
 <table width=100%><tr>
-<td><a class='btn' href='/pr/p22.php?uid=<?php echo $uid ?>&cmd=prev&h=<?php echo $h2 ?>'><- Prev </a></td>
-<td><a class='btn' href='/pr/p22.php?uid=<?php echo $uid ?>&cmd=next&h=<?php echo $h2 ?>'>Next -> </a></td>
+<td><a class='btn' href='/pr/p22.php?uid=<?php echo $uid ?>&cmd=prev&h=<?php echo $h ?>'><- Prev </a></td>
+<td><a class='btn' href='/pr/p22.php?uid=<?php echo $uid ?>&cmd=next&h=<?php echo $h ?>'>Next -> </a></td>
 </tr></table>
 </div>
 </div>
@@ -229,9 +230,9 @@ var CSS = document.documentElement.style;
 <?php } ?>
 
 <?php if($e_msg!="") {?>
-var msg="<?php echo $e_msg ?>";
-alert(msg);
-window.location="http://www.json999.com/pr/p22.php?h=$h&uid=<?= $uid ?>";
+ var msg="<?php echo $e_msg ?>";
+ alert(msg);
+ //window.location="http://www.json999.com/pr/p22.php?h=$h&uid=<?= $uid ?>";
 <?php } ?>
 </script>
 </html>

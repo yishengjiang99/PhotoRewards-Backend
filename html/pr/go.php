@@ -2,22 +2,17 @@
 ///pr/go.php?imgurl=http://img.directtrack.com/clashgroup/1398.gif?h=1&uid=4411
 $url=$_GET['imgurl'];
 $uid=$_GET['uid'];
-if(strpos($url,"1306")!==false){
- $go="http://t.mobitrk.com/?a=t&aff_id=502&tags=2901,71&o_id=1306";
-//http://ads.impact-mobi.com/ez/bsykfvsdd/&subid1=1399_$uid";
- header("location: $go");
-exit;
-}
-
-
-
 $pid=str_replace("http://www.json999.com/pr/uploads/","",$_GET['imgurl']);
-
 $pid=str_replace(".jpeg?t=1","",$pid);
 
 if(isset($_GET['uid'])){
+ require_once("/var/www/lib/functions.php");
  $uid=$_GET['uid'];
- header("location: /pr/p.php?uid=$uid&pid=$pid");
+ $user=db::row("select * from appuser where id=$uid");
+ $idfa=$user['idfa'];
+ $h2=md5($uid.$idfa."ddfassffseesfg");
+
+ header("location: /pr/p22.php?uid=$uid&pid=$pid&h=".$h2);
  exit;
 }
 ?>

@@ -15,11 +15,19 @@ $idfa=$_REQUEST['idfa'];
 $mac=$_REQUEST['mac'];
 
 if($mac=='ios7device'){
+// die(json_encode(array("title"=>"Sorry","msg"=>"device not yet supported")));
  $usercnt=db::row("select count(1) as cnt from appuser where app='picrewards' and idfa='$idfa'");
 }else{
  $usercnt=db::row("select count(1) as cntfrom appuser where app='picrewards' and mac='$mac'");
 }
+
+
 if($usercnt['cnt']>2 && $uid!=2902){
+ die(json_encode(array("title"=>"Sorry","msg"=>"Bonus code hit daily limit")));
+}
+$ipaddress=getRealIP();
+$ipcnt=db::row("select count(1) as cnt from appuser where app='picrewards' and has_entered_bonus=1 and ipaddress='$ipaddress'");
+if($ipcnt['cnt']>2){
  die(json_encode(array("title"=>"Sorry","msg"=>"Bonus code hit daily limit")));
 }
 
@@ -55,7 +63,7 @@ $min=$agentXpinfo['minbonus'];
 $max=$agentXpinfo['maxbonus'];
 $bonus=$min;
 for(;$bonus<=$max;$bonus++){
-  if(rand(0,4)<2) break; 
+  if(rand(0,10)<2) break; 
 }
 $agentUid=$agent['id'];
 $joinerUid=$user['id'];
@@ -74,6 +82,7 @@ if($joiners>2 && $ratio>1.3 && $arefs['avgltv']<100){
 if($joiners>4 && $arefs['avgltv']<50){
   die(json_encode(array("title"=>"Sorry","msg"=>"This bonus code hit daily limit")));
 }
+
 if($ratio>4){
   error_log("bad ratio ".$code);
   db::exec("update appuser set banned=1 where id=$agentUid");

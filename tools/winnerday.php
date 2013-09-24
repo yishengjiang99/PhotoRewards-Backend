@@ -1,4 +1,5 @@
 <?php
+exit;
 set_time_limit(0);
 ini_set('memory_limit','600M');
 $ctx = stream_context_create();
@@ -21,7 +22,7 @@ $winuid=$winner['uid'];
 $tot=$winner['tot'];
 $winnick=db::row("select username from appuser where id=$winuid");
 $nickstr=$winnick['username'];
-$_message="Winner of the day is $nickstr with $tot Points. Enter bonus code $nickstr";
+$_message="Winner of the day is $nickstr with $tot Points.";// Enter bonus code $nickstr";
 $sql="select token from pushtokens where app='picrewards' and disabled<5 group by token order by id desc";
 $rows=db::rows($sql);
 

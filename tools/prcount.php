@@ -9,7 +9,6 @@ $r=db::rows("select count(1) as cnt, offer_id from sponsored_app_installs where 
 foreach($r as $rr){
  $cnt=$rr['cnt']; $ref=$rr['offer_id'];
  $update="update offers set completion4=$cnt where id=$ref";
- echo "\n".$update;
  db::exec($update);
 }
 
@@ -17,11 +16,15 @@ $r=db::rows("select count(1) as cnt, offer_id from sponsored_app_installs where 
 foreach($r as $rr){
  $cnt=$rr['cnt']; $ref=$rr['offer_id'];
  $update="update offers set completions=$cnt where id=$ref";
- echo "\n".$update;
  db::exec($update);
 }
 
-$r=db::row("select group_concat(offer_id) as goodever from sponsored_app_installs where network='everbadge' and created>date_sub(now(), interval 6 hour)");
-echo $r['gooever'];
-file_put_contents("/var/www/html/pr/goodever.json",$r['goodever']);
+$r=db::row("select group_concat(distinct appid) as goodever from sponsored_app_installs a join appuser b on a.uid=b.id where a.created>date_sub(now(), interval 10 hour) and network='everbadge' and  deviceInfo like '%iPod%'");
+file_put_contents("/var/www/html/pr/goodever_ipod.json",$r['goodever']);
+
+$r=db::row("select group_concat(distinct appid) as goodever from sponsored_app_installs a join appuser b on a.uid=b.id where a.created>date_sub(now(), interval 10 hour) and network='everbadge' and  deviceInfo like '%iPhone%'");
+file_put_contents("/var/www/html/pr/goodever_iphone.json",$r['goodever']);
+
+$r=db::row("select group_concat(distinct appid) as goodever from sponsored_app_installs a join appuser b on a.uid=b.id where a.created>date_sub(now(), interval 10 hour) and network='everbadge' and  deviceInfo like '%iPad%'");
+file_put_contents("/var/www/html/pr/goodever_ipad.json",$r['goodever']);
 

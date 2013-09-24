@@ -23,9 +23,10 @@ on a.uid=b.id join pushtokens c on b.mac=c.mac_address  where username!='yisheng
 foreach($tt as $t){
 $uid=$t['uid'];
 $appname=$t['name'];
+$appname=substr($appname,0,40);
 $points=$t['amount'];
 if($t['reminded']==1) continue;
-$message="Eligibility Confirmed! Share a snapshot of '$appname' for $points Points";
+$message="Eligibility Confirmed! Share a snapshot of '$appname'";
 $iam="";
 echo $message."\n";
 $installid=$t['installid'];

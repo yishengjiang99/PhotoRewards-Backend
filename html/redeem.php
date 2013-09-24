@@ -32,6 +32,12 @@ if($reward['available']==0 && $uid!=2902 && $uid!=7885){
 }
 
 if($reward['Type']=='gc'){
+ $recent=db::row("select sum(Points) as t from reward_codes where rewarded_to_uid=$uid and date_redeemed>date_sub(now(), interval 1 hour)");
+ $rt=$recent['t'];
+ if($rt>4000){
+error_log("velocity break");
+     die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
+ }
  $hascode=db::row("select 1 from reward_codes where given_out=0 and reward_id=$rid limit 1");
  if(!$hascode) die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
  error_log("update reward_codes set given_out=1, date_redeemed=now(),rewarded_to_uid=$uid where given_out=0 and reward_id=$rid limit 1");
@@ -68,18 +74,18 @@ if($reward['Type']=='gc'){
        error_log("$email is not valid");
        die(json_encode(array("title"=>"","msg"=>$email." is not a valid email address.")));
   }
- if($email=="orlando12.12@hotmail.com" || $email=="Orlando12.12@hotmail.com"){
+ if($email=="orlando12.12@hotmail.com" || $email=="Orlando12.12@hotmail.com" || $email=="shiritrong@gmail.com"){
    die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
   }
  db::exec("update appuser set email='$email' where id=$uid");
  $balance=$user['stars'];
  $value=ceil($balance/10);
  if($value>950) $value=$value+50;
- $cnt=db::cols("select count(distinct transfer_to_user_id) from PaypalTransactions where created>date_sub(now(), interval 6 day) and email='$email'");
+ $cnt=db::cols("select count(distinct transfer_to_user_id) from PaypalTransactions where created>date_sub(now(), interval 10 day) and email='$email'");
  $cntint=$cnt[0];
  error_log("$cntint distinct user paying to $email");
  $status='init';
- if($cntint>3) die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
+ if($cntint>4) die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
  db::exec("update appuser set stars=0 where id=$uid");
  $trxid=time().$uid;
  db::exec("insert into PaypalTransactions set transfer_to_user_id=$uid,email='$email',status='$status',amount='$value',masspay_trx_id=$trxid,created=now()"); 

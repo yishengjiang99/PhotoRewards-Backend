@@ -13,10 +13,9 @@ if(isset($_GET['p'])){
  $p=$_GET['p'];
  if($p!=md5($uid."joker".$h)) die("..");
  if($user['fbliked']==0){
-   db::exec("update appuser set stars=stars+20,fbliked=1 where id=$uid limit 1");  
+   db::exec("update appuser set stars=stars+10,fbliked=1 where id=$uid limit 1");  
    require_once("/var/www/html/pr/apns.php");
    apnsUser($uid,"You win! 20 points added","You win! 20 points added");
-   db::exec("insert into pr_xp set uid=$uid,xp=20,created=now(),event='fb_like_points'");
  }
  header("location: picrewards://");
  exit;

@@ -7,7 +7,7 @@ else if($_GET['pw']=="dafhfadst444") $network='yunan';
 else die(0);
 $mac=$_GET['mac'];
 $idfa=$_GET['idfa'];
-$user=db::row("select * from appuser where idfa='$idfa' and app='picrewards'");
+$user=db::row("select * from appuser where idfa='$idfa' and app='picrewards' order by id asc limit 1");
 if(!$user) $user=db::row("select * from appuser where mac='$mac' and app='picrewards'");
 if(!$user) die("0");
 
@@ -16,7 +16,6 @@ $appid=intval($_GET['storeID']);
 $offer=db::row("select payout,cash_value,id,active from offers where storeID=$appid");
 $points=intval($offer['cash_value'])*10;
 if($offer['active']==0) exit;
-
 $offerId=$offer['id'];
 $subid=$uid."_".$offerId;
 $rev=$offer['payout'];

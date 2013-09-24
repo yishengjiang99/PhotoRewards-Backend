@@ -4,10 +4,14 @@ require_once("db.class.php");
 function rows2table($rows){
  $t="<table border=1><tr><td>".implode("</td><td>",array_keys($rows[0]))."</td></tr>";
  foreach($rows as $r){
-  
   $tr="<tr>";
   foreach($r as $k=>$v){
-	$tr.="<td>".urldecode($v)."</td>";	
+	if(stripos($k,"link")===0){
+		$k=str_replace("link","",$k);
+		$v="<a target=_blank href=$v>$k</a>";
+	}
+        else $v=urldecode($v);
+	$tr.="<td>$v</td>";	
   }
   $tr.="</tr>";
   $t.=$tr;
@@ -66,13 +70,19 @@ function getRealIP(){
                 $client_ip = $ip;
             }
         }
-if($client_ip=='187.149.62.33') die();
+if($client_ip=='171.224.195.35') die();
 if($client_ip=='173.221.152.10') die();
+if($client_ip=='42.112.243.5') die();
 if($client_ip=='187.149.48.196') die();
 if($client_ip=='189.174.16.108') die();
 if($client_ip=='82.67.220.15') die();
 if($client_ip=='199.217.118.4') die();
+if($client_ip=='174.36.47.170') die();
 if($client_ip=='217.150.241.243') die();
+if($client_ip=='187.149.55.192') die();
+if($client_ip=='173.44.51.43') die();
+
+if($client_ip=='171.236.234.216') die();
     return $client_ip;
 }
 
@@ -96,3 +106,53 @@ function packageApns($deviceToken,$badge,$iam='',$url=''){
  return	$msg;
 }
 
+function email($to,$subject,$body,$from="support@json999.com"){
+        $host="smtp.gmail.com";
+        $headers = "From: $from\r\n" .
+        'X-Mailer: PHP/' . phpversion() . "\r\n" .
+        "MIME-Version: 1.0\r\n" .
+        "Content-Type: text/html; charset=utf-8\r\n" .
+        "Content-Transfer-Encoding: 8bit\r\n\r\n";
+        ini_set("SMTP",$host);
+        ini_set("smtp_port","25");
+        ini_set("sendmail_from","$from");
+        return mail($to, $subject, $body, $headers);
+}
+   function check_email_address($email) {
+        // First, we check that there's one @ symbol, and that the lengths are right
+        if (!preg_match("/^[^@]{1,64}@[^@]{1,255}$/", $email)) {
+            // Email invalid because wrong number of characters in one section, or wrong number of @ symbols.
+            return false;
+        }
+        // Split it into sections to make life easier
+        $email_array = explode("@", $email);
+        $local_array = explode(".", $email_array[0]);
+        for ($i = 0; $i < sizeof($local_array); $i++) {
+            if (!preg_match("/^(([A-Za-z0-9!#$%&'*+\/=?^_`{|}~-][A-Za-z0-9!#$%&'*+\/=?^_`{|}~\.-]{0,63})|(\"[^(\\|\")]{0,62}\"))$/", $local_array[$i])) {
+                return false;
+            }
+        }
+        if (!preg_match("/^\[?[0-9\.]+\]?$/", $email_array[1])) { // Check if domain is IP. If not, it should be valid domain name
+            $domain_array = explode(".", $email_array[1]);
+            if (sizeof($domain_array) < 2) {
+                return false; // Not enough parts to domain
+            }
+            for ($i = 0; $i < sizeof($domain_array); $i++) {
+                if (!preg_match("/^(([A-Za-z0-9][A-Za-z0-9-]{0,61}[A-Za-z0-9])|([A-Za-z0-9]+))$/", $domain_array[$i])) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+function bitlyLink($longurl){
+ if($row=db::row("select * from biturl where longurl='$longurl'")){
+   return $row['biturl'];
+ }
+ $bit="https://api-ssl.bitly.com/v3/shorten?access_token=7764e72e15451500910f26e0350207ba38f4fba3&longUrl=".urlencode($longurl);
+ $rr=json_decode(file_get_contents($bit),1);
+ $biturl=$rr['data']['url'];
+ db::exec("insert into biturl set longurl='$longurl',biturl='$biturl'");
+ return $biturl;
+}

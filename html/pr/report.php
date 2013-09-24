@@ -10,6 +10,9 @@ if($uid==2902 && $cc=='Racial intolerance'){
  error_log("update UploadPictures set reviewed=1 where id='$pid'");
 }else{
  $user=db::row("select * from appuser where id=$uid");
+ if(!$user){
+	die(json_encode(array("title"=>"Thanks","msg"=>$msg)));
+ }
  $role=$user['role'];
  $isadmin=0;
  $msg="Your report has been set to the Information Safety Committee";

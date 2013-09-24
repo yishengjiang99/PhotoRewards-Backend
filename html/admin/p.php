@@ -35,11 +35,13 @@ $allusers=db::rows("select app, avg(stars),sum(if(created>date_sub(now(), interv
 $cashouts=db::rows("select b.name, b.Points,sum(given_out),count(1) from reward_codes a join rewards b on a.reward_id=b.id group by a.reward_id");
 $referrals=db::rows("select count(1), sum(points_to_agent)/1000 as paid_to_agent,sum(points_to_agent)/1000 as paid_to_agent,sum(points_to_joiner)/1000 as paid_to_joiner, count(distinct agentUid) as agents from referral_bonuses");
 $ppal=db::rows("select sum(amount),count(1),count(distinct transfer_to_user_id) as unique_users from PaypalTransactions");
-$rolling7user=db::rows("select date_format(created,'%Y-%m-%d') as date, count(1) as new, sum(if(banned=1, 1, 0)) as banned,sum(if(modified>date_sub(now(), interval 1 day), 1, 0)) as activetoday,avg(ltv) as ltv ,sum(if(ltv>0,1,0)) as monetized, 
-sum(if(modified>date_sub(now(), interval 1 day), 1, 0))/count(1) as attribution, avg(stars)/10 as balance from appuser where app='picrewards' and created>date_sub(now(), interval 17 day) group by datediff(now(),created) order by created desc");
-$topsql="select c.username, c.role, c.banned,count(1) as joiners, count(distinct a.ipaddress) as ips, avg(a.ltv) as ltv,agentUid, concat('/admin/ban.php?uid=',c.id) as linkban, concat('/admin/unban.php?uid=',c.id) as linkunban 
+$rolling7user=db::rows("select date_format(created,'%Y-%m-%d') as date, count(1) as new, sum(if(banned=1, 1, 0)) as banned,sum(if(modified>date_sub(now(), interval 1 day), 1, 0)) as activetoday,floor(avg(ltv)) as ltv ,sum(if(ltv>0,1,0)) as monetized, 
+sum(if(modified>date_sub(now(), interval 1 day), 1, 0))/count(1) as attribution, floor(avg(stars)/10) as balance from appuser where app='picrewards' and created>date_sub(now(), interval 17 day) group by datediff(now(),created) order by created desc");
+$topsql="select c.username, c.role, c.banned,count(1) as joiners, count(distinct a.ipaddress) as ips, avg(a.ltv) as ltv,agentUid, 
+concat('/admin/ban.php?uid=',c.id) as linkban, concat('/admin/unban.php?uid=',c.id) as linkunban, 
+concat('/admin/ban.php?uid=',c.id) as linkban, concat('/admin/ref.php?uid=',c.id) as linkdetails
 from appuser a join referral_bonuses b on a.id=b.joinerUid join appuser c on b.agentUid=c.id 
-where b.created>date_sub(now(), interval 1 day) group by agentUid having count(1)>2";
+where b.created>date_sub(now(), interval 1 day) and joinerUid!=2902 group by agentUid having count(1)>2";
 $topagents=db::rows($topsql);
 $duamua=db::rows("select sum(if(modified>date_sub(now(), interval 1 day),1,0))/sum(if(modified>date_sub(now(), interval 27 day),1,0)) as DoMu from appuser where app='picrewards' and banned=0");
 $namesavail=db::row("select count(1) as cnt from available_nicknames where taken=0");
@@ -65,7 +67,6 @@ echo "<tr><td>".rows2table($rev)."</td>";
 echo "<td>".rows2table($ppl24)."</td>";
 echo "<td>".rows2table($giftcards24)."</td></tr></table>";
 echo "</td><td>";
-
 echo "<table border=1>";
 echo "<tr><td colspan=3>P&L All Time</td></tr>";
 echo "<tr><td>".rows2table($revall)."</td>";
@@ -82,12 +83,26 @@ echo "r7";
 echo rows2table($rolling7user);
 echo "top agents today";
 echo rows2table($topagents);
+echo "<table><tr><td>";
 echo "psource-24";
 echo rows2table($pso);
+echo "</td><td>";
 echo "spin";
 echo rows2table($spins);
-$s2=db::rows("select count(distinct uid) as users, sum(revenue)/100 as rev, network,count(1) from sponsored_app_installs where created>date_sub(now(), interval 1 month) and sub2!='' group by network");
+echo "</td></tr></table>";
+$s2=db::rows("select count(distinct uid) as users, sum(revenue)/100 as rev, network,count(1) from sponsored_app_installs where created>date_sub(now(), interval 24 hour) and sub2!='' group by network");
+echo "<table><tr><td>";
 echo "s2".rows2table($s2);
+echo "</td><td>";
+$fb=db::rows("select count(1) as fbid, sum(if(email!='',1,0)) as emails from appuser where app='picrewards' and fbid!=0");
+echo rows2table($fb);
+$activeusers=
+"select substring_index(deviceInfo,'|',-1) as osVersion, count(1) as cnt,sum(if(created>date_sub(now(), interval 1 day),1,0)) as new, 
+sum(if(created>date_sub(now(), interval 1 day),ltv,0))/sum(if(created>date_sub(now(), interval 1 day),1,0)) as ltvnew,
+ avg(ltv) as ltv from appuser where deviceInfo!='' and modified>date_sub(now(), interval 7 day) and deviceInfo!='' and app='picrewards' group by deviceInfo like '%6_%',deviceInfo like '%7_%'";
+echo rows2table(db::rows($activeusers));
+echo "</td></tr></table>";
+
 echo "</td><td valign=top>";
 echo "all users";
 echo rows2table($allusers);

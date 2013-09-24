@@ -1,0 +1,13 @@
+<?php
+require_once('/var/www/lib/functions.php');
+require_once('/var/www/lib/apns.php');
+
+$rr=db::rows("select id from appuser where ltv>100 and modified<date_sub(now(), interval 3 day) and has_entered_bonus=1 and stars<120");
+$rr=db::rows("select a.ltv,stars,xp,b.joinerUid,a.id from appuser a join referral_bonuses b on a.id=b.joinerUid where ltv>100 and a.modified<date_sub(now(), interval 9 day) and a.stars<100 and banned=0 and has_entered_bonus=1");
+foreach($rr as $r){
+  $uid=$r['id'];
+  $update="update appuser set has_entered_bonus=0 where id=$uid";
+echo "\n$update";
+  db::exec($update);
+  apnsUser($uid,"You are eligible to enter another bonus code");
+}

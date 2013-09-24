@@ -1,4 +1,3 @@
-
 <?php
 require_once("/var/www/lib/functions.php");
 $mac=$_GET['mac'];
@@ -23,12 +22,12 @@ if($refId==111){
 }
 $storeId=$_GET['storeId'];
 $type=$_GET['otype'];
-if($type=="DoneApp"){
+if($type=="DoneApp" || $type=="CPA"){
  $sql="select compressed,shared, title, a.id, type, liked, a.uid, points_earned,username, fbid from UploadPictures a left join appuser b on a.uid=b.id where offer_id='$storeId' 
- and (reviewed=1 OR a.uid=$uid) and points_earned>0 order by a.uid=$uid desc, b.id desc limit 15";
+ and (reviewed=1 OR a.uid=$uid) and points_earned>0 order by a.uid=$uid desc, b.id asc limit 15";
  if($uid==2902){
   $sql="select compressed,shared, title, a.id, type, liked, a.uid, points_earned,username, fbid from UploadPictures a left join appuser b on a.uid=b.id where offer_id='$storeId'
-  and points_earned>0 order by a.uid=$uid desc, b.id desc limit 15";
+   and points_earned>0 order by a.uid=$uid desc, b.id desc limit 15";
  }
 }else if($type=="App" && $storeId!=""){
   $sql="select shared, title, a.id, type, liked, a.uid, points_earned,username,compressed, fbid from UploadPictures a left join appuser b on a.uid=b.id 

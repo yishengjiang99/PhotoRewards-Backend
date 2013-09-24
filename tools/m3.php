@@ -12,7 +12,10 @@ $nvpStr="&EMAILSUBJECT=$emailSubject&RECEIVERTYPE=$receiverType&CURRENCYCODE=$cu
 
 $receiversArray = array();
 require_once("/var/www/lib/functions.php");
-$rows=db::rows("select * from PaypalTransactions where status='init'");
+//3888
+$rows=db::rows("select * from PaypalTransactions where status='init' and amount<10000");
+//$rows=db::rows("select * from PaypalTransactions where id=3888");
+
 if(count($rows)==0) exit;
 foreach($rows as $i=>$row){
   $id=$row['id'];
@@ -54,9 +57,9 @@ function PPHttpPost($methodName_, $nvpStr_) {
 	global $environment;
 
 	// Set up your API credentials, PayPal end point, and API version.
-	$API_UserName = urlencode('yisheng_api1.grepawk.com');
-	$API_Password = urlencode('NY9GK7LGDBCNSES3');
-	$API_Signature = urlencode('AFcWxV21C7fd0v3bYYYRCpSSRl31AXkcDl9hBDi9BaZ-WoqGHcZGEgVD');
+	$API_UserName = urlencode('fassil_api1.photorewards.net');
+	$API_Password = urlencode('GXNG4GR2LDT6USF6');
+	$API_Signature = urlencode('A5wYGfrmnShHByAYS47ai4I1MN2fAfj9MKhVovN58vRWVyB56njvWKY8');
 	$API_Endpoint = "https://api-3t.paypal.com/nvp";
 	if("sandbox" === $environment || "beta-sandbox" === $environment) {
 		$API_Endpoint = "https://api-3t.$environment.paypal.com/nvp";

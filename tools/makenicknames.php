@@ -10,6 +10,7 @@ $n=array_cartesian_product(array($nt,$at));
 
 foreach($n as $tt){
  $nick=$tt[1].$tt[0];
+echo "\n$nick";
  db::exec("insert ignore into available_nicknames set nickname='$nick'");
 }
 //var_dump($n);

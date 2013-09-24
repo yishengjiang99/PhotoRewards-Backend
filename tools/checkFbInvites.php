@@ -13,6 +13,5 @@ foreach($invites as $i){
  $check="https://graph.facebook.com/$rqid?access_token=$tstr";
  curl_setopt($ch,CURLOPT_URL,$check);
  $ret=curl_exec($ch);
-echo $ret;
-exit;
+echo "\n".$ret;
 }
