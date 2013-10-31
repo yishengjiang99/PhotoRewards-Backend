@@ -5,9 +5,11 @@ $uid=intval($r['uid']);
 $pid=$r['pid'];
 $pid=str_replace("t/","",$pid);
 $pid=str_replace("m/","",$pid);
-
-$info=db::row("select a.uid as uploader, b.uid as offerer, a.points_earned from UploadPictures a join PictureRequest b on a.refId=b.id where a.id='$pid';");
+$info=db::row("select compressed,a.uid as uploader, b.uid as offerer, a.points_earned from UploadPictures a join PictureRequest b on a.refId=b.id where a.id='$pid';");
 error_log("select a.uid as uploader, b.uid as offerer, a.points_earned from UploadPictures a join PictureRequest b on a.refId=b.id where a.id='$pid'");
+       if($info['compressed']==5){
+         $dir="arch/";
+       }
 $uploader=$info['uploader'];
 $offerer=$info['offerer'];
 
@@ -27,7 +29,6 @@ $reportedandreturn=0;
 if(isset($r['report'])){
    $reportedandreturn=1;
  error_log("update UploadPictures set reviewed=reviewed-1 where id='$pid'");
-
  $user=db::row("select * from appuser where id=$uid");
  $username=$user['username'];
  if($username=='superadmin') $username='redcat';
@@ -64,27 +65,12 @@ if(isset($r['report'])){
 </head>
  <a href='picrewards://' class=btn><h1>Back To PhotoRewards</h1></a>
 <br>
-<a href="http://c.mobpartner.mobi/?s=706540&a=2471&country=US&p=67985&cr=401003"><img src="http://r.mobpartner.mobi?s=706540&a=2471&country=US&p=67985&cr=401003" /></a><br>
-<form method=POST <?=$confirm?>><input type=hidden value='<?= $_REQUEST['pid'] ?>' name='pid' />
-<input type=hidden name=report value=1 />
-<input type=hidden name=h value='<?= $h ?>' />
-
-<input type=hidden name=uid value=<?= $uid ?> />
-Report this picture!
-<br><select name='complaint'>
-<option value='none'>Select reason</option>
-<option value='Poor Quality'>Picture is poor quality</option>
-<option value='spam'>Poster is spammer</option>
-<option value='off topic'>Off-topic</option>
-<option value='offensive'>Offensive/explicit</option>
-</select>
-<input type=submit value='complain' />
-</form>
-<img width=100% src='http://json999.com/pr/uploads/<?= $pid?>.jpeg'>
+<img width=100% src='http://json999.com/pr/uploads/<?= $dir.$pid?>.jpeg'>
 <script>
 <?php if($reportedandreturn==1){
 echo ' alert("Thanks for reporting this picture to the committee!");';
 echo 'window.location="picrewards://"';
 }?>
 </script>
+</body>
 </html>

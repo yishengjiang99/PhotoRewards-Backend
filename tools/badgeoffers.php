@@ -1,4 +1,5 @@
 <?php
+exit;
 require_once("/var/www/lib/functions.php");
 $country="US";
 db::exec("update offers set active=0 where platform='dark'");

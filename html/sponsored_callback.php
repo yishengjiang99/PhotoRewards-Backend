@@ -8,7 +8,7 @@ else die(0);
 $mac=$_GET['mac'];
 $idfa=$_GET['idfa'];
 $user=db::row("select * from appuser where idfa='$idfa' and app='picrewards' order by id asc limit 1");
-if(!$user) $user=db::row("select * from appuser where mac='$mac' and app='picrewards'");
+//if(!$user) $user=db::row("select * from appuser where mac='$mac' and app='picrewards'");
 if(!$user) die("0");
 
 $uid=$user['id'];

@@ -12,8 +12,8 @@ if(intval($id)!=0 && $_GET['r']=='r'){
  $select ="select aes_decrypt(code,'supersimple') as Reward, concat('',b.name) as Item from reward_codes a join rewards b on a.reward_id=b.id where a.rewarded_to_uid=$uid";
  $rewards=db::rows($select);
 }else{
- $url="http://www.json999.com/pr/uploads/$id.jpeg";
- header("location: http:/www.json999.com/pr/p.php?uid=$uid&imgurl=$url");
+ $url="http://www.json999.com/pr/p22.php?pid=".$id;
+ header("location: $url");
  exit;
 }
 ?>
@@ -40,5 +40,10 @@ echo "<li>";
 echo $r['Item'].": ".$r['Reward'];
 }
 ?>
+<br><br><br>
+*Amazon.com is not a sponsor of this promotion. Except as required by law, Amazon.com Gift Cards ("GCs") cannot be transferred for value or redeemed for cash. GCs may be used only for purchases of eligible goods on
+Amazon.com or certain of its affiliated websites.  Purchases are deducted from the GC balance. To redeem or view a GC balance, visit "Your Account" on Amazon.com. Amazon is not responsible if a GC is lost, stolen,
+destroyed or used without permission. For complete terms and conditions, see <a href="http://www.amazon.com/gc-legal">www.amazon.com/gc-legal</a>. GCs are issued by ACI Gift Cards, Inc., a Washington corporation. All Amazon
+&trade; &amp; &copy; are IP of Amazon.com or its affiliates. No expiration date or service fees.
 </body>
 </html>

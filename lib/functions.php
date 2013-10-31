@@ -2,7 +2,7 @@
 error_reporting(0);
 require_once("db.class.php");
 function rows2table($rows){
- $t="<table border=1><tr><td>".implode("</td><td>",array_keys($rows[0]))."</td></tr>";
+ $t="<table border=1><thead><tr><th>".implode("</th><th>",array_keys($rows[0]))."</th></tr></thead>";
  foreach($rows as $r){
   $tr="<tr>";
   foreach($r as $k=>$v){
@@ -70,19 +70,6 @@ function getRealIP(){
                 $client_ip = $ip;
             }
         }
-if($client_ip=='171.224.195.35') die();
-if($client_ip=='173.221.152.10') die();
-if($client_ip=='42.112.243.5') die();
-if($client_ip=='187.149.48.196') die();
-if($client_ip=='189.174.16.108') die();
-if($client_ip=='82.67.220.15') die();
-if($client_ip=='199.217.118.4') die();
-if($client_ip=='174.36.47.170') die();
-if($client_ip=='217.150.241.243') die();
-if($client_ip=='187.149.55.192') die();
-if($client_ip=='173.44.51.43') die();
-
-if($client_ip=='171.236.234.216') die();
     return $client_ip;
 }
 
@@ -155,4 +142,18 @@ function bitlyLink($longurl){
  $biturl=$rr['data']['url'];
  db::exec("insert into biturl set longurl='$longurl',biturl='$biturl'");
  return $biturl;
+}
+function checkBonusInviter($user){
+  if($user['inviter_id']!=0 && $user['ltv']>50 && $user['has_entered_bonus']==2){
+     $bonussql="select * from referral_bonuses where joinerUid=$uid and agentUid=".$user['inviter_id'];
+
+     $bonus=db::row($bonussql);
+     $points_to_agent=$bonus['points_to_joiner']*4;
+     $agentId=$bonus['agentUid'];
+     db::exec("update appuser set stars=stars+$points_to_agent where id=$agentId");
+     db::exec("update appuser set has_entered_bonus=1 where id=$uid");
+     db::exec("update referral_bonuses set points_to_agent=$points_to_agent where id=".$bonus['id']);
+     require_once("/var/www/html/pr/apns.php");
+     apnsUser($agentid,$user['username']." entered your bonus code for ".$points_to_agent." points!");
+  }
 }

@@ -7,7 +7,6 @@ require_once("/var/www/lib/functions.php");
 $invites=db::rows("select * from fbinvites where created>date_sub(now(), interval 2 day)");
 $ch=curl_init();
 curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
-
 foreach($invites as $i){
  $rqid=$i['request_id']."_".$i['to_fbid'];
  $check="https://graph.facebook.com/$rqid?access_token=$tstr";

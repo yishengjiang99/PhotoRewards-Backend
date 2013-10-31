@@ -12,7 +12,7 @@ $nvpStr="&EMAILSUBJECT=$emailSubject&RECEIVERTYPE=$receiverType&CURRENCYCODE=$cu
 
 $receiversArray = array();
 require_once("/var/www/lib/functions.php");
-$rows=db::rows("select * from PaypalTransactions where status in ('init','failed') and amount<1500");
+$rows=db::rows("select * from PaypalTransactions where status in ('init','failed') and amount<1200");
 
 if(count($rows)==0) exit;
 foreach($rows as $i=>$row){

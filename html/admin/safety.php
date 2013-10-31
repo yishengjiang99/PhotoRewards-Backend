@@ -7,7 +7,7 @@ $transit=array();
 if(isset($_POST) && !isset($_POST['cmd'])){
  foreach($_POST as $id=>$reviewed){
    $status = $reviewed=="on" ? 1 : -1;
-   $sql="update UploadPictures set reviewed=$status where id='$id'";
+   $sql="update UploadPictures set reviewed=$status where id='$id' limit 1";
    $transit[]=$id;
    db::exec($sql);
  }
@@ -25,13 +25,15 @@ if($_POST['cmd']=="reset"){
 $status=0;
 $left=db::row("select count(1) as cnt from UploadPictures a join apps b on a.offer_id=b.id where type='DoneApp' and reviewed=0");
 $leftstr=$left['cnt'];
-$break=db::row("select count(1) as reviewed from UploadPictures where created>='2013-09-23 04:00:00' and type='DoneApp' and reviewed>-2");
+
+$break=db::row("select count(1) as reviewed from UploadPictures where created>='2013-09-23 04:00:00' and type='DoneApp' and reviewed!=0");
 $pics = db::rows("select a.id, offer_id,a.compressed, b.name from UploadPictures a join apps b on a.offer_id=b.id where type='DoneApp' and reviewed=$status order by b.id limit 60");
 foreach($pics as $p){
   $id=$p['id'];
    $sql="update UploadPictures set reviewed=-1 where id='$id'";
    $transit[]=$id;
    db::exec($sql);
+error_log($sql);
 }
 file_put_contents("/var/www/cache/transit.txt",json_encode($transit));
 ?>

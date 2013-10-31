@@ -23,11 +23,11 @@ if(isset($_GET['msg'])){
 </head>
 <body>
 <div id="fb-root"></div>
-<div>
+<span>
 <a id=signin class="btn-auth btn-facebook large" href="#">
  <?php echo $msg; ?>
 </a>
-</div>
+</span>
 <script>
 
 window.fbAsyncInit = function() {

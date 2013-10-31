@@ -5,20 +5,34 @@ if(isset($_GET['src'])){
     setcookie("src", $src,time()+60*60*24*30);
     setcookie("subid", $_GET['subid'],time()+60*60*24*30);
     setcookie("registered", "0", time()+60*60*24*30*12);
-     require_once('/var/www/lib/functions.php');
+    require_once('/var/www/lib/functions.php');
     $ua=$_SERVER['HTTP_USER_AGENT'];
-    preg_match("/\((.*?) CPU (.*?) OS (.*?) like/", $ua,$m);
-    $device=$m[1];
-    $os=$m[3];
-    $dinfo="$device|$os";
     $sid=$_GET['subid'];
     $ipaddress=getRealIP();
-    db::exec("insert into incoming_clicks set subid='$sid', created=now(),deviceInfo='$dinfo',ip='$ipaddress'");
+    db::exec("insert into incoming_clicks set subid='$sid', created=now(),deviceInfo='$ua',ip='$ipaddress',source='appdog'");
  }
- 
  header("location: https://itunes.apple.com/app/photorewards/id662632957?mt=8");
  exit;
 }
+
+if(isset($_GET['nn']) && $_GET['nn']!=''){
+ require_once("/var/www/lib/functions.php");
+ $username=stripslashes($_GET['nn']);
+ $sql="select * from appuser where username='$username'";
+ $inviter =db::row($sql);
+ $inviterId=$inviter['id'];
+ setcookie("inviter", $inviterId,time()+60*60*24*30,"/","json999.com");
+ $ua=$_SERVER['HTTP_USER_AGENT'];
+ $ipaddress=getRealIP();
+ db::exec("insert into incoming_clicks set subid='$inviterId', created=now(),deviceInfo='$ua',ip='$ipaddress',source='bonuscode'");
+ header("location: https://itunes.apple.com/app/photorewards/id662632957?mt=8");
+ exit;
+}
+
+if(isset($_GET['uid']) && !isset($_COOKIE['inviter'])){
+ setcookie("inviter", $_GET['uid'],time()+60*60*24*30,"/","json999.com");
+}
+
 if(strpos($_GET['from'],'invideDone')!==false){
  require_once('/var/www/lib/functions.php');
  $rid=$_GET['request'];

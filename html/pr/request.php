@@ -8,7 +8,8 @@ $_GET=$req;
 $mac=$_GET['mac'];
 $idfa=$_GET['idfa'];
 $cb=$_GET['cb'];
-$user=db::row("select * from appuser where app='$cb' and mac='$mac'");
+error_log(json_encode($req));
+$user=db::row("select * from appuser where app='$cb' and idfa='$idfa'");
 $uid=$user['id'];
 
 if(!isset($_GET['cmd']) || $_GET['cmd']!="moreInfo"){
@@ -17,7 +18,7 @@ if(!isset($_GET['cmd']) || $_GET['cmd']!="moreInfo"){
   if($title=='(null)'){
      die(json_encode(array('title'=>'pwned','msg'=>'title cannot be null')));
  }
- if($bid>10) die(json_encode(array("title"=>"Not Saved","msg"=>"Something wrong")));
+  if($bid>50) die(json_encode(array("title"=>"Not Saved","msg"=>"Something wrong")));
   $quand=$_GET['q']; 
   $category=$_GET['category'];
   $status=-1;
@@ -33,8 +34,7 @@ if(!isset($_GET['cmd']) || $_GET['cmd']!="moreInfo"){
      die(json_encode(array('title'=>'pwned','msg'=>'You can only post one request every 10 hours')));
   }
   $status=0;
-  if($uid==2902) $status=1;
-$status=1;
+  if($uid==2902) $status=3;
   $sql="insert into PictureRequest set uid=$uid,title='$title',cash_bid=$bid,max_cap=$quand,category='$category',status=$status,created=now()";
   db::exec($sql);
   $rid=db::lastID();
@@ -52,7 +52,6 @@ else{
  if($sms && $sms!=''){
    db::exec("update appuser set sms='$sms' where id=$uid limit 1");
  } 
-
  $ret=array("title"=>"All Done","msg"=>"We will review this listing ASAP.");
 }
 

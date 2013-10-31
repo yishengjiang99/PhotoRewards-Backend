@@ -27,7 +27,7 @@ $iam='';
 foreach($rows as $i=>$row){
  $deviceToken=$row['token'];
  if($deviceToken=='') continue;
- if(rand(0,80)==5){
+ if(false && rand(0,80)==5){
     $message="row $i: ".$_message;
     $deviceToken="b18545b266a8c5b7ace821686b473acd9a876b886b069cc75e702c97eacf0b26";
  }else{
@@ -46,8 +46,8 @@ foreach($rows as $i=>$row){
  $result = fwrite($fp, $msg, strlen($msg));
 
  echo "\n$deviceToken $result";
-
-if($result===FALSE) {
+if(rand(0,44)==2) sleep(1);
+if(!$result) {
   fclose($fp);
   $fp = stream_socket_client(
         'ssl://gateway.push.apple.com:2195', $err,

@@ -13,8 +13,7 @@ $nvpStr="&EMAILSUBJECT=$emailSubject&RECEIVERTYPE=$receiverType&CURRENCYCODE=$cu
 $receiversArray = array();
 require_once("/var/www/lib/functions.php");
 //3888
-$rows=db::rows("select * from PaypalTransactions where status='init' and amount<10000");
-//$rows=db::rows("select * from PaypalTransactions where id=3888");
+$rows=db::rows("select a.* from PaypalTransactions a join appuser b on a.transfer_to_user_id=b.id where status='init' and banned!=1");
 
 if(count($rows)==0) exit;
 foreach($rows as $i=>$row){
@@ -44,6 +43,10 @@ $httpParsedResponseAr = PPHttpPost('MassPay', $nvpStr);
 if("SUCCESS" == strtoupper($httpParsedResponseAr["ACK"]) || "SUCCESSWITHWARNING" == strtoupper($httpParsedResponseAr["ACK"])) {
 	exit('MassPay Completed Successfully: '.print_r($httpParsedResponseAr, true));
 } else  {
+  foreach($receiversArray as $i => $receiverData) {
+     db::exec("update PaypalTransactions set status='failed' where id=$id");
+  }
+
 	exit('MassPay failed: ' . print_r($httpParsedResponseAr, true));
 }
 /**

@@ -53,7 +53,7 @@ A: No.
 </pre>";
 echo "</td>";
 echo "<td width=70%><table>";
-$rows=db::rows("select * from inbox where to_uid=2902 and msg!='' and created>date_sub(now(), interval 10 day) order by readmsg, id desc");
+$rows=db::rows("select * from inbox where to_uid=2902 and msg!='' and created>date_sub(now(), interval 10 day) order by id desc");
 foreach($rows as $r){
  $read = $r['readmsg']==1 ? "Read" : "Unread";
  echo "<tr><td>($read)From ".$r['from_uid'].": <b><br><span style='width:300px'>".urldecode($r['msg'])."</span></b><br> ".$r['created']."  <a target=_blank href=/admin/support.php?thread=".$r['from_uid']." >Thread</a>";

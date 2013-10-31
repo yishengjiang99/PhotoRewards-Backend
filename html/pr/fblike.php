@@ -13,9 +13,15 @@ if(isset($_GET['p'])){
  $p=$_GET['p'];
  if($p!=md5($uid."joker".$h)) die("..");
  if($user['fbliked']==0){
-   db::exec("update appuser set stars=stars+10,fbliked=1 where id=$uid limit 1");  
-   require_once("/var/www/html/pr/apns.php");
-   apnsUser($uid,"You win! 20 points added","You win! 20 points added");
+   $fbid=$user['fbid'];
+   if($fbid!=0){
+    $otherfbuser=db::row("select * from appuser where fbid=$fbid and fbliked=1");
+    if(!$otherfbuser){
+     db::exec("update appuser set stars=stars+10,fbliked=1 where id=$uid limit 1");  
+     require_once("/var/www/html/pr/apns.php");
+     apnsUser($uid,"You win! 20 points added","You win! 20 points added");
+    }
+   }
  }
  header("location: picrewards://");
  exit;

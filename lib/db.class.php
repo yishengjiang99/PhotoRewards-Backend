@@ -53,7 +53,7 @@ $s=microtime(true);
 			$error = $statement->errorInfo();
 		}
                 $e=microtime(true);
-//error_log("SQL $sql took ".($e-$s));
+if($_SERVER['SCRIPT_URL']=="/pr/fblogin2.php") error_log("SQL $sql took ".($e-$s));
 		return $statement;
 	}
 	

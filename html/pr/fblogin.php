@@ -1,25 +1,73 @@
 <?php
 require_once("/var/www/lib/functions.php");
 $uid=intval($_GET['uid']);
-$user=db::row("select idfa,fbliked from appuser where id=$uid");
+$user=db::row("select idfa,fbliked,fbid from appuser where id=$uid");
 $idfa=$user['idfa'];
-$h=$_GET['h'];
-if($h!=md5($uid.$idfa."fblikeh")){
-  die("...");
-}
-$cb="uid=$uid&h=$h&p=".md5($uid."joker".$h);
+$code=$_GET['code'];
 
-if(isset($_GET['p'])){
- $p=$_GET['p'];
- if($p!=md5($uid."joker".$h)) die("..");
- if($user['fbliked']==0){
-   db::exec("update appuser set stars=stars+20,fbliked=1 where id=$uid limit 1");  
-   require_once("/var/www/html/pr/apns.php");
-   apnsUser($uid,"You win! 20 points added","You win! 20 points added");
-   db::exec("insert into pr_xp set uid=$uid,xp=20,created=now(),event='fb_like_points'");
+if(!$code || ($user['fbid']!=0 && $user['fbfriends']!=0 && $user['locale'])){
+   header("location: picrewards://");
+}
+$cb="https://www.json999.com/pr/fblogin.php?uid=$uid";
+$gettoken="https://graph.facebook.com/oauth/access_token?client_id=146678772188121&redirect_uri=".urlencode($cb)."&client_secret=de49dfd8e172bfb840036a53e44c5d7c&code=$code";
+$ret=file_get_contents($gettoken);
+
+preg_match("/access_token=(.*?)&expires=/",$ret,$m);
+$token="";
+if(isset($m[1])){
+ $token=$m[1];
+}
+$pointsearned=0;
+if($token!=""){
+ $friendCnt=-1;
+ $url="https://graph.facebook.com/me/friends?access_token=$token";
+ $fbfriends=json_decode(file_get_contents($url),1);
+ if($fbfriends && $fbfriends['data']) $friendCnt=count($fbfriends['data']);
+ $url="https://graph.facebook.com/me/?access_token=$token";
+ $fbdata=file_get_contents($url);
+ error_log($fbdata);
+ $json=json_decode($fbdata,1);
+ $fbid=$json['id'];
+ $email=$json['email'];
+ $gender=$json['gender'];
+ $fname=$json['first_name'];
+ $locale='';
+ if($json['locale']) $locale=$json['locale'];
+ $merged=0;
+ $rows=db::rows("select * from appuser where fbid=$fbid order by modified");
+ if(count($rows)==0){
+     $pointsearned=20;
+     db::exec("update appuser set stars=stars+$pointsearned where id=$uid limit 1");
+  }else if(count($rows)>8){
+     $note=count($rows)." devices with same fbaccount";
+	error_log("update appuser set banned=1, note='$note' where id=$uid");
+    db::exec("update appuser set banned=1, note='$note' where id=$uid");
+  }else if(count($rows)>=1){
+ 	$pstar=0;$pxp=0;$pltv=$row['ltv'];$puid=0;$username="";
+	foreach($rows as $row){
+		if($row['active']==0) continue;
+		if($row['id']==$uid) continue;
+		if($row['banned']==1){	
+			$note="same fbid $fbid as banned user ".$row['id'];
+			//db::exec("update appuser set banned=1,note='$note' where id=$uid"); break;
+		}
+		$merged=1;
+  		error_log("dup user merging from ".$row['id']." to ".$uid);
+		$pstar=$row['stars'];
+	        $pxp=$row['xp'];
+  		$puid=$row['id']; 
+		$pltv=$row['ltv'];
+	}
+	if($puid!=0){
+		db::exec("update appuser set stars=stars+$pstar,xp=xp+$pxp,ltv=$pltv,active=1 where id=$uid");
+		db::exec("update appuser set stars=0,xp=0,active=0 where id=$puid");
+	}
  }
- header("location: picrewards://");
- exit;
+ db::exec("insert ignore into fbusers set fbid=$fbid,email='$email',gender='$gender',mac='$mac',firstname='$fname', uid=$uid, fbdata='$fbdata', friend_count=$friendCnt on duplicate key update friend_count=$friendCnt");
+ db::exec("update appuser set fbid=$fbid,fbfriends=$friendCnt,locale='$locale' where id=$uid limit 1");
+ if($user['email']==""){
+    db::exec("update appuser set email='$email' where id=$uid limit 1");
+ }
 }
 ?>
     <!DOCTYPE html>
@@ -28,34 +76,16 @@ if(isset($_GET['p'])){
      <meta content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" name="viewport">
     <meta charset="utf-8">
     <title>PhotoRewards On Facebook</title>
-    <link href="/css/bootstrap.css" rel="stylesheet">
     </head>
     <body style='max-width:300px;margin-left:auto;margin-right:auto;'>
- <a href='picrewards://' class=btn><h3>Back To PhotoRewards</h3></a>
-<br><br>
-<h2>Like us on Facebook</h2>
-<li><b>Be the first to know when a new App goes live</b>
-<li><b>Never miss a double-xp, double-point event again</b>
-<li><b>CLICK 'LIKE' for 20 points</b>
-<div id="fb-root"></div>
-<div class="fb-like-box" data-href="https://www.facebook.com/photorewards" data-width="292" data-show-faces="true" data-header="false" data-stream="false" data-show-border="true"></div>
-<script type="text/javascript">
-    window.fbAsyncInit = function() {
-        FB.init({appId: '146678772188121', status: true, cookie: true, xfbml: true});
-        FB.Canvas.setSize({ width: 300, height: 500 });
-        FB.Event.subscribe('edge.create',
-            function(response) {
-	         window.location = "https://www.json999.com/pr/fblike.php?<?= $cb ?>"; 
-            }
-        );
-    };
-    //Load the SDK asynchronously
-    (function() {
-        var e = document.createElement('script'); e.async = true;
-            e.src = document.location.protocol +
-              '//connect.facebook.net/en_US/all.js';
-            document.getElementById('fb-root').appendChild(e);
-    }());
+ <script>
+<?php if ($pointsearned>0){ ?>
+alert("You earned 20 points!");
+<?php }?>
+<?php if ($merged>0){ ?>
+alert("Logged In");
+<?php }?>
+window.location="picrewards://";
 </script>
 </body>
 </html>

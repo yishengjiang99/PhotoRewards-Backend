@@ -1,6 +1,14 @@
+<html>
+<body>
 <?php
 date_default_timezone_set("UTC");
 echo date("Y-m-d H:i:s");
+echo "<br><a href=/admin/trends.php>Trends</a>";
+echo "<br><a href=/admin/redemptions.php>REdemptions</a>";
+echo "<br><a href=/admin/refall.php>Referrals</a>";
+echo "<br>..<a href=/admin/banned.php>Banned Users</a>";
+echo "<br>.<a href=/admin/conversions.php>Conversions</a>";
+
 require_once("/var/www/lib/functions.php");
 
 $rev1=db::rows("select sum(revenue)/100 as rev from sponsored_app_installs where created>date_sub(now(), interval 1 hour)");
@@ -14,10 +22,10 @@ $giftcards24=db::rows("select sum(r.Points)/1000 as cards_out from reward_codes 
 $revall=db::rows("select sum(revenue)/100 as rev from sponsored_app_installs");
 $giftcardsall=db::rows("select sum(r.Points)/1000 as cards_out from reward_codes a join rewards r on a.reward_id=r.id where given_out=1");
 
-$revenue_breakout=db::rows("select sum(revenue)/100 as revenue, network from sponsored_app_installs where created>date_sub(now(), interval 1 day) group by network order by revenue desc");
-$revenue_breakout_all=db::rows("select sum(revenue)/100 as rev, network from sponsored_app_installs group by network order by rev desc limit 5");
-$revenue_today_utc_breakout=db::rows("select sum(revenue)/100 as revenue, network from sponsored_app_installs where date(created)>=date(now()) group by network order by revenue desc");
-$revenue_mtd=db::rows("select sum(revenue)/100 as rev, network from sponsored_app_installs where month(created)>=month(now()) group by network order by rev desc");
+$revenue_breakout=db::rows("select sum(revenue)/100 as revenue,count(1) as cnt, sum(Amount)/1000 as up,network from sponsored_app_installs where created>date_sub(now(), interval 1 day) group by network order by revenue desc");
+$revenue_breakout_all=db::rows("select sum(revenue)/100 as rev, count(1) as cnt,sum(Amount)/1000 as up,network from sponsored_app_installs group by network order by rev desc limit 9");
+$revenue_hour_breakout=db::rows("select sum(revenue)/100 as revenue,count(1) as cnt,sum(Amount)/1000 as up, network from sponsored_app_installs where created>date_sub(now(), interval 1 hour) group by network order by revenue desc");
+$revenue_mtd=db::rows("select sum(revenue)/100 as rev,count(1) as cnt,sum(Amount)/1000 as up, network from sponsored_app_installs where month(created)>=month(now()) group by network order by rev desc");
 $ppoutall=db::rows("select sum(amount)/100 as pplout from PaypalTransactions where status='processed'");
 $newusers_today=db::rows("select avg(stars),sum(stars), avg(xp), count(1) as cnt, app from appuser where created>date_sub(now(), interval 1 day) group by app");
 $refhour=db::rows("select sum(ltv)/100 as revenue,sum(points_to_agent)*2/1000 as cost,count(1) as joiners,count(distinct agentUid) as agent from appuser a join referral_bonuses b
@@ -31,15 +39,14 @@ $reffutc=db::rows("select sum(ltv)/100 as revenue,sum(points_to_agent)*2/1000 as
 $refweek=db::rows("select sum(ltv)/100 as revenue,sum(points_to_agent)*2/1000 as cost,count(1) as joiners,count(distinct agentUid) as agent from appuser a join referral_bonuses b 
  on a.id=b.joinerUid where a.created>date_sub(now(), interval 7 day)");
 
-$allusers=db::rows("select app, avg(stars),sum(if(created>date_sub(now(), interval 1 day),1,0)) as newtoday, sum(if(modified>date_sub(now(), interval 1 day),1,0)) as active_today, avg(xp),count(1) as cnt,sum(stars)/1000 as account_payable, app from appuser where banned=0 group by app having count(1)>10");
-$cashouts=db::rows("select b.name, b.Points,sum(given_out),count(1) from reward_codes a join rewards b on a.reward_id=b.id group by a.reward_id");
+$allusers=db::rows("select app, avg(stars),sum(if(created>date_sub(now(), interval 1 day),1,0)) as newtoday, sum(if(modified>date_sub(now(), interval 1 day),1,0)) as active_today, avg(xp),count(1) as cnt,sum(stars)/1000 as AP, app from appuser where banned=0 group by app having count(1)>10");
+$cashouts=db::rows("select b.id,b.name, b.Points,sum(given_out) as o,count(1) as cnt from reward_codes a join rewards b on a.reward_id=b.id group by a.reward_id");
 $referrals=db::rows("select count(1), sum(points_to_agent)/1000 as paid_to_agent,sum(points_to_agent)/1000 as paid_to_agent,sum(points_to_joiner)/1000 as paid_to_joiner, count(distinct agentUid) as agents from referral_bonuses");
 $ppal=db::rows("select sum(amount),count(1),count(distinct transfer_to_user_id) as unique_users from PaypalTransactions");
 $rolling7user=db::rows("select date_format(created,'%Y-%m-%d') as date, count(1) as new, sum(if(banned=1, 1, 0)) as banned,sum(if(modified>date_sub(now(), interval 1 day), 1, 0)) as activetoday,floor(avg(ltv)) as ltv ,sum(if(ltv>0,1,0)) as monetized, 
-sum(if(modified>date_sub(now(), interval 1 day), 1, 0))/count(1) as attribution, floor(avg(stars)/10) as balance from appuser where app='picrewards' and created>date_sub(now(), interval 17 day) group by datediff(now(),created) order by created desc");
-$topsql="select c.username, c.role, c.banned,count(1) as joiners, count(distinct a.ipaddress) as ips, avg(a.ltv) as ltv,agentUid, 
-concat('/admin/ban.php?uid=',c.id) as linkban, concat('/admin/unban.php?uid=',c.id) as linkunban, 
-concat('/admin/ban.php?uid=',c.id) as linkban, concat('/admin/ref.php?uid=',c.id) as linkdetails
+sum(if(modified>date_sub(now(), interval 1 day), 1, 0))/count(1) as attrition, floor(avg(stars)/10) as balance from appuser where app='picrewards' and created>date_sub(now(), interval 17 day) group by datediff(now(),created) order by created desc");
+$topsql="select c.username, c.role, c.banned,count(1) as joiners,sum(points_to_agent) as apoints, count(distinct a.ipaddress) as ips, floor(avg(a.ltv)) as ltv,agentUid as uid, 
+concat('/admin/ban.php?uid=',c.id) as linkban, concat('/admin/unban.php?uid=',c.id) as linkunb,concat('/admin/ref.php?uid=',c.id) as linkdetails
 from appuser a join referral_bonuses b on a.id=b.joinerUid join appuser c on b.agentUid=c.id 
 where b.created>date_sub(now(), interval 1 day) and joinerUid!=2902 group by agentUid having count(1)>2";
 $topagents=db::rows($topsql);
@@ -96,10 +103,9 @@ echo "s2".rows2table($s2);
 echo "</td><td>";
 $fb=db::rows("select count(1) as fbid, sum(if(email!='',1,0)) as emails from appuser where app='picrewards' and fbid!=0");
 echo rows2table($fb);
-$activeusers=
-"select substring_index(deviceInfo,'|',-1) as osVersion, count(1) as cnt,sum(if(created>date_sub(now(), interval 1 day),1,0)) as new, 
+$activeusers="select substring_index(deviceInfo,'|',-1) as osVersion, count(1) as cnt,sum(if(created>date_sub(now(), interval 1 day),1,0)) as new, 
 sum(if(created>date_sub(now(), interval 1 day),ltv,0))/sum(if(created>date_sub(now(), interval 1 day),1,0)) as ltvnew,
- avg(ltv) as ltv from appuser where deviceInfo!='' and modified>date_sub(now(), interval 7 day) and deviceInfo!='' and app='picrewards' group by deviceInfo like '%6_%',deviceInfo like '%7_%'";
+ avg(ltv) as ltv from appuser where deviceInfo!='' and modified>date_sub(now(), interval 7 day) and app='picrewards' and banned=0 group by deviceInfo like '%6_%',deviceInfo like '%7_%'";
 echo rows2table(db::rows($activeusers));
 echo "</td></tr></table>";
 
@@ -108,10 +114,10 @@ echo "all users";
 echo rows2table($allusers);
 echo "<table border=1>";
 echo "<tr><td colspan=2>Network Performances</td></tr>";
-echo "<tr><td>Today</td><td>Alltime</td></tr>";
-echo "<tr><td valign=top>last 24-hours".rows2table($revenue_breakout)."Today so far (UTC)".rows2table($revenue_today_utc_breakout)."</td>";
-echo "<td valign=top>".rows2table($revenue_breakout_all)."mtd".rows2table($revenue_mtd)."</td></tr></table>";
+echo "<tr><td valign=top>last 24-hours".rows2table($revenue_breakout)."mtd:".rows2table($revenue_mtd)."</td>";
+echo "<td valign=top>Last hour".rows2table($revenue_hour_breakout)."alltime".rows2table($revenue_breakout_all)."</td></tr></table>";
 echo "Inventory";
+echo "<br>Paypal balance: $".file_get_contents("/var/www/cache/pbal.txt");
 echo rows2table($cashouts);
 echo "devices";
 echo rows2table($devices);
@@ -123,3 +129,5 @@ echo rows2table($countries);
 echo "<li>nicknames left: $namesleft";
 echo "</td></tr></table>";
 ?>
+</body>
+</html>

@@ -12,7 +12,7 @@ $r=db::row("select * from PictureRequest where id=$rid");
 $dbrid=$r['id'];
 $uid=$r['uid'];
 $title=$r['title'];
-db::exec("update PictureRequest set status=-2 where id=$dbrid limit 1");
+db::exec("update PictureRequest set status=-2 where id=$dbrid and status!=3 limit 1");
 db::exec("update appuser set banned=5 where id=$uid");
 ?>
 <html>

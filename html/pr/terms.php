@@ -1,2 +1,8 @@
-<?php
-die("don't be a douchebag");
+<html>
+<body>
+Don't be a douchebag.
+
+<br>
+
+</body>
+</html>

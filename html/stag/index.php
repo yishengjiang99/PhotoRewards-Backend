@@ -69,8 +69,10 @@ if(isset($_POST['submit_button'])){
                 <span>Makes Great Apps</span>
             </a></h1>
         </div>
-              
-	</div> <!-- end of templatemo_site_title_bar -->
+	
+        <div style='position:relative;left:100px;top:20px;'><iframe style='height:47px;margin-top: -10px; margin-left: -11px;' scrolling="no" src='https://www.json999.com/fb_iframe.php'></iframe></div>
+</div> <!-- end of templatemo_site_title_bar -->
+
 </div> <!-- end of templatemo_site_title_bar_wrapper -->
 
 
@@ -89,15 +91,14 @@ if(isset($_POST['submit_button'])){
 					<h2>PhotoRewards - Upload Pictures. Get Free Gift Cards</h2>
 					<div class="image_wrapper fl_image">
 			                    <img src="http://grepawk.s3.amazonaws.com/screen-4-1.png" width=160 alt="image"/>&nbsp;&nbsp;&nbsp;
-	                                     <img src="http://grepawk.s3.amazonaws.com/screen-4-2.png" width=160 alt="image"/>
+	                                    <img src="http://grepawk.s3.amazonaws.com/screen-4-2.png" width=160 alt="image"/>
     					</div>
-                    <p class="em_text">- Upload Pictures.<br>- Earn Points<br>- Redeem for Gift Cards<br><li>PayPal Cashouts starting at $0.25<li>Amazon.com Gift Cards, Starbucks Gift Cards, xBox Gift Cards, iTunes Gift Cards
-                <br><a href='https://itunes.apple.com/app/id662632957?mt=8'>
+                    <p class="em_text">- Upload Pictures.<br>- Earn Points<br>- Redeem for Gift Cards<br><li><b>PayPal Cashouts starting at $0.25<li>Amazon.com Gift Cards*, Starbucks Gift Cards, xBox Gift Cards, iTunes Gift Cards
+                </b><br><br>*Amazon.com is not a sponsor of this program. For complete gift card terms and conditions, see, www.amazon.com/gc-legal. All Amazon ®,  ™ & © are IP of Amazon.com or its affiliates. No expiration date or service fees.
+	<br><a href='https://itunes.apple.com/app/id662632957?mt=8'>
         <img width=200 src="http://www.castlen.com/elements/App-Store-Badge.png"></a>
                 </p>
-
-		<br><span style='color:#FFFC5A'>Register Now For a Level 70 Bonus Code:</span><br><iframe style='height:47px;margin-top: -10px; margin-left: -11px;' scrolling="no" src='https://www.json999.com/fb_iframe.php'></iframe>
-		</p>	
+		<br>
 			</div>
 			</div>
 			<div class="panel" title="Finance">

@@ -49,18 +49,20 @@ if($replyTo==3 || $msg=="spin"){
   }
   if($msg=='spin' || $msg=='s'){
      $win=0; $wint='';
+     $pwin=0;
      $user= db::row("select ltv,banned,tracking from appuser where id=$from");
      if($user['tracking']>=10 && $uid!=2902) die(json_encode(array("title"=>"***SLOT MACHINE***","msg"=>"You have no more spins today; come back tomorrow!")));
-     if($user['ltv']<150 || $user['banned']==1) die(json_encode(array("title"=>"***SLOT MACHINE***","msg"=>"slot machine is broken!")));
+     if($user['ltv']<10) die(json_encode(array("title"=>"***SLOT MACHINE***","msg"=>"slot machine is broken!")));
      $spinleft=10-$user['tracking']-1;
      for($i=1;$i<4;$i++){
        $row="";
-	$rwin=0;
+	$rwin=0; $rpwin=0;
        $lastJ=0;
        for($j=0;$j<3;$j++){
-	 if($j==1 && rand(0,2)==0){
+	 if($j==1 && rand(0,2)==1){
 		$r=$lastJ;
-       	}
+       	 }
+         else if($j==0 && rand(0,2)==1) $r="$";
 	 else {
 		$r=rand(1,3);
 	}
@@ -70,20 +72,22 @@ if($replyTo==3 || $msg=="spin"){
        }
        if($row=="[1][1][1]") $rwin=30;
        if($row=="[2][2][2]") $rwin=70;
-       if($row=="[$][$][$]") $rwin=240;
+       if($row=="[$][$][$]") $rpwin=24;
        if($rwin>0) $wint.="\n[You won $rwin XP on row $i]";
+       if($rpwin>0) $wint.="\n[You won $rpwin Points on row $i]";
        $win+=$rwin; $reels.="\n$row";
+       $pwin+=$rpwin;
      }
-     if($win>0){ 
- 	db::exec("update appuser set xp=xp+$win where id=$uid");
+     if($win>0 || $pwin>0){ 
+ 	db::exec("update appuser set xp=xp+$win,stars=stars+$pwin where id=$uid");
 	$user=db::row("select * from appuser where id=$uid");
-	$xp=$user['xp'];
-        $wint.="\nYou now have $xp Experience Points";
+	$xp=$user['xp']; $points=$user['stars'];
+        $wint.="\nYou now have $xp XP and $points points";
      }else{
 	$wint="\n[Sorry no winning combinations]";
      }
      db::exec("insert into spins set uid=$uid, created=now(),win=$win");
-      db::exec("update appuser set tracking=tracking+1 where id=$uid");
+     db::exec("update appuser set tracking=tracking+1 where id=$uid");
      die(json_encode(array("title"=>"***FREE SLOT MACHINE***","msg"=>"You pull the lever...\nreels start spinning...".$reels."$wint"."\n$spinleft Spins left for today")));
   }
   die(json_encode(array("title"=>"***FREE SLOT MACHINE***","msg"=>"Did out understand the msg '$msg'. Reply 'spin' to play!")));
@@ -111,8 +115,8 @@ if(stripos($msg, 'addfriend')!==FALSE){
   if(!$existing){
    $cnt=db::row("select count(1) as cnt from friends where f1=$from");
    $cnt=$cnt['cnt'];
-   if($cnt>10){
-    die(json_encode(array("title"=>"done","msg"=>"You are capped to 10 friends (fow now)")));
+   if($cnt>30){
+    die(json_encode(array("title"=>"done","msg"=>"You are capped to 30 friends (fow now)")));
    }
    $friend=db::row("select username from appuser where id=$to");
    $friendname=$friend['username'];

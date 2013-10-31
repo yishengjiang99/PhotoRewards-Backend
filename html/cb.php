@@ -7,17 +7,85 @@ if(isset($_GET['amount_cents'])){
  $amount=(double)$_GET['amount_cents']/100;
 }
 $network=$_GET['network'];
+$ip="";
+if($network=="sponsorpay"){
+  $uid=intval($_GET['uid']);
+  $payoutToUser=intval($_GET['amount']);
+  $rev=$payoutToUser*1000/3000;
+  $subid=$uid.time();
+  $transID=$_GET['_trans_id_'];
+  $e=db::row("select * from sponsored_app_installs where transactionID='$transID'");
+  if($e){
+    die();
+  }
+  $offerID=$_GET['lpid'];
+  $app=null;
+  $offerapp=db::row("select * from extapps where offer_id='$offerID'");
+  if($offerapp){
+    $storeID=$offerapp['appid'];
+    $up=0;
+    $sameAppUser=db::row("select * from sponsored_app_installs where appid=$storeID and uid=$uid");
+    if($sameAppUser){
+      $payoutToUser=0; $up=0;
+    }
+    $app=db::row("select * from apps where id=$storeID");
+   
+  }else{
+   $storeID=123456;
+   $offerID="";
+   $up=1;
+  }
+  $s2="";
+    
+  $insert1="insert ignore into sponsored_app_installs set Amount=$payoutToUser, appid=$storeID, uid=$uid, network='$network', offer_id='$offerID', subid='$subid',";
+  $insert1.=" uploaded_picture=$up, created=now(),transactionID='$transID',revenue=$rev,sub2='$s2'";
+  db::exec($insert1);
+  if($up==1){
+   db::exec("update appuser set stars=stars+$payoutToUser where id=$uid");
+  }
+  db::exec("update appuser set ltv=ltv+$rev where id=$uid");
+  $user=db::row("select * from appuser where id=$uid");
+  if($up==0 && $app){
+     $name=$app['Name'];
+     $msg="Thanks for trying $name! Share a screenshot for $payoutToUser Points";
+  }else{
+   $user=db::row("select * from appuser where id=$uid");
+   $newpoints=$user['stars'];
+   $msg="You got $payoutToUser new Points! New Balance: $newpoints total.";
+  }
+  apnsUser($uid,$msg,"");
+  error_log("SPA: ".$msg."  ".strlen($msg));
+  die(); 
+}
+
 if($network=='clicksmob' && getRealIP()!='54.243.133.243'){
  error_log("BAD IP CALLBACK ".json_encode($_GET));
 }
 if($network=='mobpartner' && getRealIP()!='95.131.138.180'){
  error_log("BAD IP CALLBACK ".json_encode($_GET));
 }
+$clientIp='';
+if(isset($_GET['ip'])){
+ $clientIp=$_GET['ip'];
+}
+
 $subid=$_GET['subid'];
 $st=explode(",",$subid);
 $uid=intval($st[0]);
 $offerID=$st[1];
 $transID=$_GET['transactionID'];
+
+if(!$transID){
+ $transID=$subid;
+}
+
+$e=db::row("select * from sponsored_app_installs where transactionID='$transID'");
+if($e && $transID!=''){
+  error_log("repeat transid..".json_encode($_GET));
+  $response=$transID.":OK";
+ die($response);
+}
+
 if(isset($_GET['sampleid'])){
   $network='admobix';
 }
@@ -26,8 +94,9 @@ if(isset($st[2])){
  $s2=$st[2];
 }
 $instantpay=0;
-if($network!='virool' && $network!='everbadge'){
+if($network!='virool' && $network!='everbadge' && $network!='aarki' && $network!='supersonic'){
  $offer=db::row("select * from offers where id=$offerID");
+ 
  if(!$offer) die("1");
  $storeID=$offer['storeID'];
  if($storeID==''){
@@ -57,15 +126,62 @@ else if($network=='everbadge'){
  if(!$offer) die("nt");
  $storeID=$offer['id']; 
  $name=$offer['Name'];
- $payoutToUser=doubleval($amount)*100;
+ $payoutToUser=doubleval($amount)*250;
+}else if($network=='aarki'){
+   $requestIp=$_GET['click_label'];
+   $completionIp=$_GET['ip'];
+   $ip=$completionIp;
+   if($requestIp!=$completionIp){
+       error_log("ips don't match setting payout to 0");
+	$payoutToUser=0;
+   }
+   $sig=$_GET['sig'];
+   $payoutToUser=$_GET['puser'];
+   if($payoutToUser>500){
+       $payoutToUser=0;
+   }
+   $e=db::row("select * from sponsored_app_installs where subid='$subid'");
+   if($e && $transID!=''){
+     $payoutToUser=0;  
+   }
+   $name=$_GET['name'];
+   $storeID=999;
+   $s2=$name; 
+}else if($network=='supersonic'){
+ $payoutToUser=$_GET['amount'];
+ $recent=db::row("select count(1) as cnt from sponsored_app_installs where uid=$uid and created>date_sub(now(), interval 5 minute)");
+ $user=db::row("select * from appuser where id=$uid");
+ $rr=$recent['cnt'];
+  if($rr>3){
+   $payoutToUser=0;
+  }
+  if($payoutToUser>1000) $payoutToUser=0;
+  $amount=$_GET['commission'];
+  $storeID=444;
+  $s2=$_GET['offerTitle'];
+  $name=$s2;
+  $offerID=$s2;
+  $offerapp=db::row("select * from extapps where offer_id='$offerID' and network='ssa'");
+  $app=null;
+  $upload=0;
+  if($offerapp){
+    $storeID=$offerapp['appid'];
+     $sameAppUser=db::row("select * from sponsored_app_installs where appid=$storeID and uid=$uid");
+     if($sameAppUser){
+       $payoutToUser=0; $up=0;
+     }
+
+    $app=db::row("select * from apps where id=$storeID");
+    $name=$app['Name'];
+    if($app){
+      $upload=1;
+    }
+  }
 }
 
-if(!$transID){
- $transID=$subid;
-}
-$amount=number_format($amount,2);
+
+$amount=number_format($amount,4);
 $rev=$amount*100;
-$payoutToUser=rand(intval($payoutToUser*1), intval($payoutToUser*1));
 if($santa=db::row("select * from sponsored_app_installs where uid=$uid and appid=$storeID and network='santa'")){
  $installid=$santa['id'];
  db::exec("update sponsored_app_installs set Amount=$payoutToUser, network='$network', subid='$subid', created=now(), transactionID='$transID',revenue=$rev,offer_id=$offerID where id=$installid");
@@ -74,10 +190,11 @@ if($santa=db::row("select * from sponsored_app_installs where uid=$uid and appid
  apnsUser($uid,"You earned $payoutToUser Points for the $name screenshot!","Your earned $payoutToUser Points for the $name screenshot!");
  exit;
 }
-db::exec("update appuser set ltv=ltv+$rev where id=$uid");
-$insert1="insert ignore into sponsored_app_installs set Amount=$payoutToUser, appid=$storeID, uid=$uid, network='$network', offer_id='$offerID', subid='$subid', created=now(),
-transactionID='$transID',revenue=$rev,sub2='$s2'";
-error_log($insert1);
+//if($payoutToUser>0){
+ db::exec("update appuser set ltv=ltv+$rev where id=$uid");
+//}
+
+$insert1="insert ignore into sponsored_app_installs set Amount=$payoutToUser, appid=$storeID, uid=$uid, network='$network', offer_id='$offerID', subid='$subid', created=now(),transactionID='$transID',revenue=$rev,sub2='$s2',ip='$ip'";
 db::exec($insert1);
 $installId=db::lastID();
 if($network=='virool'){
@@ -88,13 +205,32 @@ if($network=='virool'){
    db::exec("update appuser set stars=stars+$payoutToUser where id=$uid");
    $msg="You got $payoutToUser Points for $name!";
    db::exec("update sponsored_app_installs set uploaded_picture=1 where id=$installId");
-}else if ($s2!=''){
+}else if($network=="supersonic"){
+  if($upload==0){
+    db::exec("update appuser set stars=stars+$payoutToUser where id=$uid");
+    $user=db::row("select * from appuser where id=$uid");
+    $newpoints=$user['stars'];
+    $msg="You got $payoutToUser Points! New Balance: $newpoints total.";
+    db::exec("update sponsored_app_installs set uploaded_picture=1 where id=$installId");
+  }else{
+   $msg="Thanks for trying $name! Share a screenshot for $payoutToUser Points";  
+  }
+    if($msg!="") apnsUser($uid,$msg,"");
+   $response=$transID.":OK";
+   die($response);
+}else if ($s2!='' && $network!='aarki'){
    db::exec("update appuser set stars=stars+$payoutToUser where id=$uid");
    $msg="You got $payoutToUser Points when your friend downloaded $name!";
    db::exec("update sponsored_app_installs set uploaded_picture=1 where id=$installId");
+}else if($network=='aarki'){
+   db::exec("update appuser set stars=stars+$payoutToUser where id=$uid");
+   $user=db::row("select * from appuser where id=$uid");
+   $newpoints=$user['stars'];
+   $msg="You got $payoutToUser Points! New Balance: $newpoints total.";
+   if($payoutToUser==0) $msg="";
+   db::exec("update sponsored_app_installs set uploaded_picture=1 where id=$installId");
 }else{
- $msg="Thanks for trying $name! Share a screenshot for $payoutToUser Points";
+  $msg="Thanks for trying $name! Share a screenshot for $payoutToUser Points";
 }
-error_log($msg."  ".strlen($msg));
-apnsUser($uid,$msg,"");
+if($msg!="" && $payoutToUser>0) apnsUser($uid,$msg,"");
 echo 1;
