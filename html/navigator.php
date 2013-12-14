@@ -9,7 +9,7 @@ $back=urldecode($_GET['cb']);
 <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 </head>
 <body>
-<a href='<?=$back ?>'><img height=30 src='http://www.json999.com/img/backbtn.jng'></a>
+<a href='<?=$back ?>'><img height=30 src='http://dwmp0th6ct4l1.cloudfront.net/img/2013-06-14-ios6-back-button.png'></a>
 <br>
 <iframe width=100% src='<?= $url ?>' height=1000px></iframe>
 </body>

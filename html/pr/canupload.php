@@ -5,10 +5,12 @@ $refstr=$_GET['refId'];
 $appId=intval($refstr);
 if($appId==0){
   $name=urldecode($refstr);
-  $app=db::row("select * from apps where Name like '$name%'");
+  $app=db::row("select * from apps where Name like '%$name%'");
+  if(!$app) $app = db::row("select a.* from apps a join extapps b on a.id=b.appid and b.offer_id='$refstr'");
   if($app) $appId=$app['id'];
   else die("no");
 }
+
 $reviewer=0;
 $ua=$_SERVER['HTTP_USER_AGENT'];
 if(strpos($ua,"PictureRewards/1.3")!==false){
@@ -19,7 +21,6 @@ if(strpos($ua,"PictureRewards/1.3")!==false){
    die($installId);
  }
 }
-
 $install=db::row("select * from sponsored_app_installs where uid=$uid and appid=$appId");
 if($install) {
  die($install['id']."");

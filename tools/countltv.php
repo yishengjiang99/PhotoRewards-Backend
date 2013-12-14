@@ -1,4 +1,5 @@
 <?php 
+exit;
 require_once("/var/www/lib/functions.php");
 $rows=db::rows("select uid, sum(revenue) as ltv from sponsored_app_installs group by uid");
 

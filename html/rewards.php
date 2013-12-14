@@ -12,12 +12,21 @@ if(strpos($ua,"PictureRewards/1.2")!==false){
 }
 
 $uid=$_GET['uid'];
+$user=db::row("select * from appuser where id=$uid");
 $rows=db::rows("select * from rewards where available>0 order by display_order asc");
 $rr=array();
 foreach($rows as $r){
+ if($r['Type']=='cross'){
+    if($user['country']!="US") continue;
+    $r['Description']="FREE on Photo Contest";
+    $r['Points']="Free";
+    $r['postext']="Enter a photo contest to win ".$r['name']." Gift Card for FREE";
+    $rr[]=$r; 
+    continue;
+  }
  if($reviewer==1 && ($r['id']==1 || $r['id']==4 || $r['id']==5)) continue;
  if($latestversion==0) $r['requiresEmail']=0;
- $r['postext']="Click OK to redeem ".$r['Points']." for a $".$r['CashValue']." ".$r['name']." Gift Card";
+ if($r['id']!=1) $r['postext']="Click OK to redeem ".$r['Points']." for a $".$r['CashValue']." ".$r['name']." Gift Card";
  if($r['requiresEmail']=="0") $r['postext']=$r['postext']."\n\rGift Card code will be available instantly and recorded under 'My Account' -> 'History'";
  if($r['requiresEmail']==1 && $r['Type']=="gc") $r['postext']=$r['postext']."\n\nGift Card code will be delivered via Email. Please enter your email address below:";
  if($r['requiresEmail']==1 && $r['Type']=="Paypal") $r['postext']=$r['postext']."\n\nPlease enter your PayPal email address below:";

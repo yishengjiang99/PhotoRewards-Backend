@@ -21,9 +21,9 @@ if(isset($_POST['submit_button'])){
   }else{
    $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
    $from =$_POST['author']."<$email>";
-   $to="yisheng.jiang@gmail.com";
+   $to="support@photorewards.net";
    $comment=$_POST['text'];
-   email($to,"Json999.com support email",$comment,$from);
+   email($to,"PhotoRewards/grepawk.com support email",$comment,$from);
    $msg="<div class=success>Thank you for your feedback. Your feedback has been sent to the CEO and his team.</div>";
  }
 }

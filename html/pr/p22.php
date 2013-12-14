@@ -1,5 +1,8 @@
 <?php
+header("location: picrewards://");
+exit;
 require_once("/var/www/lib/functions.php");
+
 $r=$_REQUEST;
 $uid=intval($_GET['uid']);
 $h=$r['h'];

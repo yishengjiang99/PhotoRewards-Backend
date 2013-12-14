@@ -19,25 +19,33 @@ function apnsUser($uid,$badge,$iam="",$url=""){
 }
 
 function _apnshUser($uid, $badge, $iam="", $url=""){
- $token=db::row("select a.token from pushtokens a join appuser b on a.idfa=b.idfa where b.id=$uid and a.app='picrewards' order by a.id desc limit 1");
+ $token=db::row("select token,app from pushtokens where uid=$uid");
+ if(!$token) $token=db::row("select a.token from pushtokens a join appuser b on a.idfa=b.idfa where b.id=$uid and a.app='picrewards' order by a.id desc limit 1");
+ if(!$token) $token=db::row("select a.token from pushtokens a join appuser b on a.mac=b.mac where b.id=$uid and a.app='picrewards' order by a.id desc limit 1");
+ if(!$token){
+	error_log("token not found");
+	return;
+  }
+ $app=$token['app'];
  $tokenstr=$token['token'];
  $deviceToken=$tokenstr;
-// error_log("UID $uid token $badge $deviceToken");
  $passphrase='prpr';
-////////////////////////////////////////////////////////////////////////////////
-
-$ctx = stream_context_create();
-stream_context_set_option($ctx, 'ssl', 'local_cert', '/var/www/tools/PRProdCertKey.pem');
-stream_context_set_option($ctx, 'ssl', 'passphrase', $passphrase);
-// Open a connection to the APNS server
-$fp = stream_socket_client(
+ $certfile="/var/www/tools/PRProdCertKey.pem";
+ if($app=="contest"){
+    $passphrase='contest';
+    $certfile="/var/www/tools/pcProdCertKey.pem";
+ }
+ $ctx = stream_context_create();
+ stream_context_set_option($ctx, 'ssl', 'local_cert', $certfile);
+ stream_context_set_option($ctx, 'ssl', 'passphrase', $passphrase);
+ $fp = stream_socket_client(
 	'ssl://gateway.push.apple.com:2195', $err,
 	$errstr, 60, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $ctx);
 
-if (!$fp){
+ if (!$fp){
 	error_log("Failed to connect: $err $errstr" . PHP_EOL);
          return;
-}
+ }
 
 // Create the payload body
 $body['aps'] = array(

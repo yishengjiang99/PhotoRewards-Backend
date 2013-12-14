@@ -5,9 +5,14 @@ $httpParsedResponseAr = PPHttpPost('GetBalance', $nvpStr);
 
 if("SUCCESS" == strtoupper($httpParsedResponseAr["ACK"]) || "SUCCESSWITHWARNING" == strtoupper($httpParsedResponseAr["ACK"])) {
    $g_pbal=urldecode($httpParsedResponseAr['L_AMT0']);
+ if(intval($g_pbal)>400){
+   require_once("/var/www/lib/functions.php");  
+   db::exec("update rewards set available=1 where id in (1,4) and available!=0");
+ }
 } else  {
    $g_pbal="unknown";
 }
+echo $g_pbal;
 file_put_contents("/var/www/cache/pbal.txt",$g_pbal);
 function PPHttpPost($methodName_, $nvpStr_) {
 	global $environment;

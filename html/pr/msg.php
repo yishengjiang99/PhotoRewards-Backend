@@ -94,7 +94,7 @@ if($replyTo==3 || $msg=="spin"){
 }
 
 $fromname="";
-$user= db::row("select username from appuser where id=$from");
+$user= db::row("select username,email from appuser where id=$from");
 $fromname=$user['username'];
 if(stripos($msg,$fromname)!==FALSE){
      die(json_encode(array("title"=>"You lose","msg"=>"Please dont spam")));
@@ -120,7 +120,7 @@ if(stripos($msg, 'addfriend')!==FALSE){
    }
    $friend=db::row("select username from appuser where id=$to");
    $friendname=$friend['username'];
-   $xp=30;$e="friended $friendname";
+   $xp=3;$e="friended_user";
    db::exec("insert into friends set f1=$from, f2=$to, created=now()");
    db::exec("insert into pr_xp set uid=$from,xp=$xp,created=now(),event='$e'");
    db::exec("update appuser set xp=xp+$xp where id=$from");
@@ -134,13 +134,17 @@ if(stripos($msg, 'addfriend')!==FALSE){
 }
 if($to==2902){
   $amsg="$fromname says '".urldecode($msg)."'";
-  apnsUser($to,$amsg,"$fromname says '".urldecode($msg)."'");
+ //function email($to,$subject,$body,$from="support@json999.com"){
+ $fromEmail="support@photorewards.net";
+ if($user['email']!="") $fromEmail=$user['email'];
+ $previous=rows2table(db::rows("select * from inbox where (to_uid=$from and from_uid=2902) or (to_uid=2902 and from_uid=$from) order by created desc"));
+  qapnsUser($to,$amsg,"$fromname says '".urldecode($msg)."'");
 }else{
  apnsUser($to,$amsg,"$fromname says '".urldecode($msg)."'");
 }
 
 if($to==2902){
-     die(json_encode(array("title"=>"done","msg"=>"msg sent!\n If I don't reply within 2 hours please email yisheng@grepawk.com or txt 1-650-804-6836")));
+     die(json_encode(array("title"=>"done","msg"=>"msg sent!\n")));
 }else{
    die(json_encode(array("title"=>"done","msg"=>"msg sent $tousername!\nReply 'delete' to any msg to delete")));
 }

@@ -5,7 +5,6 @@ $uid=$_GET['uid'];
 
 $pid=str_replace("http://www.json999.com/pr/uploads/","",$_GET['imgurl']);
 $pid=str_replace(".jpeg?t=1","",$pid);
-
 if(isset($_GET['uid'])){
  require_once("/var/www/lib/functions.php");
  $uid=$_GET['uid'];
@@ -19,14 +18,14 @@ if(isset($_GET['uid'])){
  }
 if($url=="http://i.imgur.com/EApqc4n.png?t=1"){
   $url="http://www.supersonicads.com/delivery/mobilePanel.php?applicationUserId=$uid&applicationKey=2d5dc8b9&deviceOs=ios&deviceIds[IFA]=$idfa%20&currencyName=Points";
-error_log($url);
+  error_log($url);
   header("location: $url");
   exit;
  }
 
  $h2=md5($uid.$idfa."ddfassffseesfg");
-// header("location: /pr/p22.php?uid=$uid&pid=$pid&h=".$h2);
-// exit;
+ header("location: /pr/p22.php?uid=$uid&pid=$pid&h=".$h2);
+ exit;
 }
 ?>
 <html>

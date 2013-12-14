@@ -21,14 +21,12 @@ echo "\n$update";
 db::exec($update);
 $url="";
  apnsUser($uid,$message,$iam,$url);
-//exit;
 }
 
 if(rand(0,5)!=4) exit;
 $tt=db::rows("select reminded, a.amount,c.token,b.username,b.id as uid, p.name,p.id,a.id as installid from sponsored_app_installs a join apps p on a.appid=p.id join appuser b
 on a.uid=b.id join pushtokens c on b.mac=c.mac_address  where a.created<date_sub(now(), interval 10 day) and username!='yisheng' and uploaded_picture=0 and network!='virool' and network!=''
 and b.modified<date_sub(now(), interval 5 day) and b.stars<100 group by b.id");
-
 foreach($tt as $t){
 $uid=$t['uid'];
 $appname=$t['name'];

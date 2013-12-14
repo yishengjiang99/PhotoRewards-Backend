@@ -14,7 +14,7 @@ if($p['codes']!="" && intval($p['rid'])){
 }
 unset($_POST['rid']);
 unset($_POST['codes']);
-$rewards=db::rows("select id, concat(name,CashValue) as name from rewards where type='gc'");
+$rewards=db::rows("select id, concat(name,CashValue) as name from rewards");
 $select="<select name='rid'>";
 foreach($rewards as $r){
  $select.="<option value=".$r['id'].">".$r['name']."</option>";

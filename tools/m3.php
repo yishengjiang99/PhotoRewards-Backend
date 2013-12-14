@@ -13,8 +13,7 @@ $nvpStr="&EMAILSUBJECT=$emailSubject&RECEIVERTYPE=$receiverType&CURRENCYCODE=$cu
 $receiversArray = array();
 require_once("/var/www/lib/functions.php");
 //3888
-$rows=db::rows("select a.* from PaypalTransactions a join appuser b on a.transfer_to_user_id=b.id where status='init' and banned!=1");
-
+$rows=db::rows("select a.* from PaypalTransactions a join appuser b on a.transfer_to_user_id=b.id where status='init' and b.banned!=1 and amount<5000");
 if(count($rows)==0) exit;
 foreach($rows as $i=>$row){
   $id=$row['id'];

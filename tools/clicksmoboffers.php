@@ -1,12 +1,12 @@
 <?php
-$cmd='curl -L -c /var/www/tools/cookies.txt -d "api_email=ray@grepawk.com&api_password=Cc\$ec25j" http://clicksmob.com/analytics-new-api/login_api -X POST';
+$cmd='curl -L -c /var/www/tools/cookies.txt -d "api_email=ray@grepawk.com&api_password=supersimple" http://clicksmob.com/analytics-new-api/login_api -X POST';
 exec($cmd);
 
 $cmd='curl -L -b /var/www/tools/cookies.txt http://clicksmob.com/analytics-new-api/offers.json > /var/www/tools/listclicksmoboffers.json';
 exec($cmd);
 
 $offers=json_decode(file_get_contents("/var/www/tools/listclicksmoboffers.json"),1);
-//var_dump($offers);
+var_dump($offers);
 
 
 foreach($offers as $o){

@@ -1,17 +1,13 @@
 <?php
+
 require_once("/var/www/lib/functions.php");
-$req=array();
-foreach($_REQUEST as $k=>$v){
- $req[$k]=mysql_real_escape_string($v);
-}
-$_GET=$req;
+$_GET=$_REQUEST;
 $mac=$_GET['mac'];
 $idfa=$_GET['idfa'];
 $cb=$_GET['cb'];
 error_log(json_encode($req));
 $user=db::row("select * from appuser where app='$cb' and idfa='$idfa'");
 $uid=$user['id'];
-
 if(!isset($_GET['cmd']) || $_GET['cmd']!="moreInfo"){
   $title=$_GET['title'];
   $bid=$_GET['bid'];

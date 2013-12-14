@@ -3,7 +3,7 @@
 <a href='new_offer.php'>New offer</a>
 <?php
 require_once("/var/www/lib/functions.php");
-$offers=db::rows("select id,name,affiliate_network,active,payout,completions as 'completion24',completion4 as 'completion 4hours', dailylimit,rank_weight,click_url from offers order by platform='dark', active>0 desc, rank_weight");
+$offers=db::rows("select id,name,affiliate_network,active,payout,cash_value,completions as 'completion24',completion4 as 'completion 4hours', dailylimit,click_url from offers order by platform='dark', active>0 desc, rank_weight");
 echo "<br><a href=http://json999.com/admin/conversions.php>Conversion</a>";
 echo "<table border=1>";
 echo "<tr><td></td>";

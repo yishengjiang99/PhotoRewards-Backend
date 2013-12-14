@@ -14,19 +14,10 @@ if (!$fp) exit("Failed to connect: $err $errstr" . PHP_EOL);
 
 require_once('/var/www/html/pr/apns.php');
 require_once('/var/www/lib/functions.php');
-
-$winner=db::row("select sum(Amount) as tot, uid from sponsored_app_installs where created>date_sub(now(), interval 1 day) group by uid order by sum(Amount) desc limit 1");
-$winuid=$winner['uid'];
-
-$tot=$winner['tot'];
-$winnick=db::row("select username from appuser where id=$winuid");
-$nickstr=$winnick['username'];
-$_message="Winner of the day is $nickstr with $tot Points.";// Enter bonus code $nickstr";
-$_message="Share a screenshot for 'Instant Alerts for NASDAQ' for 250 Points!";
-
-$sql="select token from pushtokens where app='picrewards' and disabled<5 group by token order by id desc";
+$_message="48 hours left to invite a friend for 2x the bonus!";// Enter bonus code $nickstr";
+$_message="After 5 months, I'm in the Crystal League on Clash of Clans -- superadmin";
+$sql="select token from pushtokens where app='picrewards' and disabled<3 group by token";
 $rows=db::rows($sql);
-
 foreach($rows as $i=>$row){
  $deviceToken=$row['token'];
  if(rand(0,1000)==5){
@@ -39,7 +30,6 @@ foreach($rows as $i=>$row){
  $body['aps'] = array(
 	'alert' => $message,
 	'sound' => 'default',
-	
 	'custom_key1'=>'Ok',
 	);
  $payload = json_encode($body);
@@ -47,7 +37,7 @@ foreach($rows as $i=>$row){
  $msg = chr(0) . pack('n', 32) . pack('H*', $deviceToken) . pack('n', strlen($payload)) . $payload;
 
  $result = fwrite($fp, $msg, strlen($msg));
-echo "\n$i $result ".strlen($msg) ;
+ echo "\n$i $result ".strlen($msg) ;
 
 if(!$result) {
   fclose($fp);

@@ -5,7 +5,6 @@ $subid=$_GET['subid'];
 $st=explode(",",$subid);
 $uid=intval($st[0]);
 $offerID=$st[1];
-$pref=db::row("select * from prclicks where subid='$subid'");
 $sql="insert into prclicks set subid='$subid', uid=$uid, offer_id='$offerID',created=now(), url='$go'";
 db::exec($sql);
 ?>

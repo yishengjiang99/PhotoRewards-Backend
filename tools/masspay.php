@@ -12,7 +12,7 @@ $nvpStr="&EMAILSUBJECT=$emailSubject&RECEIVERTYPE=$receiverType&CURRENCYCODE=$cu
 
 $receiversArray = array();
 require_once("/var/www/lib/functions.php");
-$rows=db::rows("select * from PaypalTransactions where status in ('init','failed') and amount<1200");
+$rows=db::rows("select * from PaypalTransactions where status in ('init','failed','reviewed') and amount<600");
 
 if(count($rows)==0) exit;
 foreach($rows as $i=>$row){
@@ -48,7 +48,7 @@ if("SUCCESS" == strtoupper($httpParsedResponseAr["ACK"]) || "SUCCESSWITHWARNING"
 	exit('MassPay Completed Successfully: '.print_r($httpParsedResponseAr, true));
 } else  {
   email("yisheng@grepawk.com","Mass pay failed!!",json_encode($httpParsedResponseAr));
-  db::exec("update rewards set available=0 where id in (1,4)");
+  db::exec("update rewards set available=4 where id in (1,4)");
   foreach($receiversArray as $i => $receiverData) {
      db::exec("update PaypalTransactions set status='failed' where id=$id");
   }

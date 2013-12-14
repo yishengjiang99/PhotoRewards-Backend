@@ -56,6 +56,8 @@ $sql="select sum(amount)/100 as pc, unix_timestamp(min(created)) div $res * $res
 
 <a href='/admin/trends.php?day=30&res=86400'>30 day daily</a><br>
 <a href='/admin/trends.php?day=90&res=86400'>90 day daily</a> <br>
+<a href='/admin/trends.php?day=200&res=2592000'>200 day Monthly</a> <br>
+<a href='/admin/trends.php?day=365&res=604800'>365 day Weekly</a> <br>
 
 <div id='chart_div' style='width: 700px; height: 240px;'>
 </div>
@@ -69,28 +71,43 @@ $sql="select sum(amount)/100 as pc, unix_timestamp(min(created)) div $res * $res
 	data.addColumn("number", "rev");
         data.addColumn("number","gc");
 	data.addRows([
-<?php foreach($rows as $row){
+<?php 
+$now=time();
+$multi=1;
+foreach($rows as $row){
   $t=$row['t'];
+if($now-$t<$res){
+ $multi=$res/($now-$t);
+}
   $r=$row['r'];
   $tstr=$t."000";
-  $u= isset($tc[$t]) ? $tc[$t] : 0;
   $g=isset($rc[$t]) ? $rc[$t] : 0;
   if(isset($pc[$t])) $g = $g+$pc[$t];
+  $r=$r*$multi; $g=$g*$multi;
   echo "[new Date($tstr), $r,$g],";
 }?>]);
 var chart = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div'));
  chart.draw(data, {displayAnnotations: true, dateFormat:"HH:mm MMMM dd, yyyy"});
-
  var data2 = new google.visualization.DataTable();
         data2.addColumn('date', "Date");
         data2.addColumn("number", "newusers");
         data2.addColumn("number","joiners");
         data2.addRows([
-<?php foreach($users as $row){
+<?php 
+$now=time();
+$multi=1;
+foreach($users as $row){
   $t=$row['t'];
+
+if($now-$t<$res){
+ $multi=$res/($now-$t);
+}
+
   $u=$row['user'];
   $tstr=$t."000";
   $j=isset($jc[$t]) ? $jc[$t] : 0;
+$u=$u*$multi;
+$j=$j*$multi;
   echo "[new Date($tstr), $u,$j],";
 }?>]);
 var chart2 = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div2'));

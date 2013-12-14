@@ -1,4 +1,5 @@
 <?php
+exit;
 require_once("/var/www/lib/functions.php");
 require_once("/var/www/lib/firewall.php");
 error_log(json_encode($_REQUEST));

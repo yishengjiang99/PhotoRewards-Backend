@@ -16,7 +16,6 @@ if($refId==888){
   die(json_encode(array(array("id"=>"appstore","url"=>"http://json999.com/img/sup.png","appstore"=>"1"))));
 }
 if($refId==991){
-  //http://i.imgur.com/EApqc4n.png
    die(json_encode(array(array("id"=>"appstore","url"=>"http://i.imgur.com/EApqc4n.png?t=1&uid=$uid","appstore"=>"1"))));
 }
 if($refId==111){
@@ -28,11 +27,16 @@ if($refId==889){
 if($refId==993 || $refId==1000){
    die(json_encode(array()));
 }
+if($refId==941){
+    die(json_encode(array(array("id"=>"appstore","url"=>"http://d1y3yrjny3p2xa.cloudfront.net/apf.png","appstore"=>"1"))));
+}
 $storeId=$_GET['storeId'];
 if(intval($storeId)==92){
     die(json_encode(array()));
 }
+
 $type=$_GET['otype'];
+
 if($type=="DoneApp"){
  $sql="select compressed,shared, title, a.id, type, liked, a.uid, points_earned,username, fbid from UploadPictures a left join appuser b on a.uid=b.id where offer_id='$storeId' 
  and (reviewed=1 OR a.uid=$uid) and points_earned>0 order by a.uid=$uid desc, RAND() limit 15";
@@ -42,7 +46,7 @@ if($type=="DoneApp"){
  }
 }else if($type=="SPA"){
  $appname=$_GET['refId'];
- $app=db::row("select * from apps where Name like '".urldecode($appname)."%'");
+ $app=db::row("select * from apps where Name like '".htmlspecialchars_decode($appname)."%'");
  if(!$app) {
    $url="http://json999.com/appmetaName.php?name=".$_GET['refId'];
    $app=json_decode(file_get_contents("http://json999.com/appmetaName.php?name=".$_GET['refId']),1);
@@ -50,22 +54,42 @@ if($type=="DoneApp"){
  if(!$app) die(json_encode(array()));
  $offerId=$_GET['storeId'];
  $network="sp";
- if($offerId==92){ //this is getting too hackish
-   $offerId=$appname;
+ if($offerId==922){ //this is getting too hackish
+   $offerId=htmlspecialchars_decode($appname);
    $network="ssa";
  }
  $storeId=$app['id'];
  $sql="select shared, title, a.id, type, liked, a.uid, points_earned,username,compressed, fbid from UploadPictures a left join appuser b on a.uid=b.id
- where offer_id='$storeId' and (reviewed>=1 OR a.uid=$uid) order by a.uid=$uid, a.created asc limit 10";  
+ where offer_id='$storeId' and (reviewed>=1 OR a.uid=$uid) order by a.uid=$uid, a.created asc limit 10"; 
  db::exec("insert ignore into extapps set appid=$storeId,offer_id='$offerId',network='$network'");  
-}
+}else if($type=="aarkcpi"){
+ $appname=trim(str_replace(" (Free)","",$_GET['storeId']));
+ $offerId=$_GET['refId'];
+ $app=db::row("select * from apps where Name like '".htmlspecialchars_decode($appname)."%'");
+ if(!$app){
+   $url="http://json999.com/appmetaName.php?c=aarki&name=".$appname;
+   $app=json_decode(file_get_contents($url),1);
+ }
+ if(!$app) {
+   error_log("did not find app $appname for $type ",1,"/var/www/log/noapp.log");
+   die(json_encode(array()));
+ }
+ $network="aarki";
+ $storeId=$app['id'];
+ $sql="select shared, title, a.id, type, liked, a.uid, points_earned,username,compressed, fbid from UploadPictures a left join appuser b on a.uid=b.id
+ where offer_id='$storeId' and (reviewed>=1 OR a.uid=$uid) order by a.uid=$uid, a.created asc limit 10";
+ db::exec("insert ignore into extapps set appid=$storeId,offer_id='$offerId',network='$network'");
+} 
 else if($type=="App" && $storeId!=""){
-  $sql="select shared, title, a.id, type, liked, a.uid, points_earned,username,compressed, fbid from UploadPictures a left join appuser b on a.uid=b.id 
+ $sql="select shared, title, a.id, type, liked, a.uid, points_earned,username,compressed, fbid from UploadPictures a left join appuser b on a.uid=b.id 
  where offer_id='$storeId' and (reviewed>=1 OR a.uid=$uid) order by a.uid=$uid, RAND() limit 10";
 }else if($type=="UserOffers"){
   $sql="select shared, title, a.id, type, liked, a.uid, points_earned,username, compressed,fbid from UploadPictures a left join appuser b on a.uid=b.id where refId='$refId' and type='UserOffers' and reviewed>=0 and points_earned>0 and banned<5 order by a.uid=$uid desc limit 15";
 }else if($type=='MyUploads'){
   $sql="select shared, title, a.id, type, liked, a.uid, points_earned,username, compressed,fbid from UploadPictures a left join appuser b on a.uid=b.id where refId='$refId' and type='UserOffers' and banned<5 order by a.created desc";
+}else if($type=="CPA" && intval($storeId)>0){
+  $sql="select shared, title, a.id, type, liked, a.uid, points_earned,username,compressed, fbid from UploadPictures a left join appuser b on a.uid=b.id
+  where offer_id='$storeId' and (reviewed>=1 OR a.uid=$uid) order by a.uid=$uid, RAND() limit 10";
 }
 if($sql){
  $pics=db::rows($sql);

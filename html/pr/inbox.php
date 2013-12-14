@@ -13,7 +13,7 @@ if($user['ltv']>10) $ret[]=$slot;
 $pigeon=array("From"=>"The Pigeon Machine","msg"=>"put @username to msg anyone!","readmsg"=>1,"from_uid"=>2902,"msg_id"=>5);
 if($user['visit_count']>10) $ret[]=$pigeon;
 
-if($user['visit_count']>10){
+if($user['visit_count']>10 && $user['visit_count']<100){
  require_once("/var/www/html/pr/levels.php");
  $agentXpinfo=getBonusPoints($user['xp'],$user['country']);
  $url="http://photorewards.net/".$user['username'];
@@ -24,7 +24,7 @@ if($user['visit_count']>10){
  $ret[]=$news;
 }
 
-if($user['ltv']<20){
+if($user['ltv']<120){
  $newbie=$user['visit_count']<5;
  $ret[]=array("From"=>"How it works","msg"=>"***How it works****\n1.Click on a picture topic from 'Earn points'.\n2. Learn more about the topic by trying it out. \n3.Take a screenshot from within the app.\n4.It can take up to 2 hours to confirm your eligibility. We will send u a notification asap. \n5.Share the screenshot on PhotoRewards to earn points",
  "readmsg"=>!$newbie,"from_uid"=>2902,"msg_id"=>10);

@@ -3,9 +3,9 @@ require_once("/var/www/lib/functions.php");
 require_once("/var/www/lib/firewall.php");
 require_once("/var/www/html/pr/levels.php");
 require_once("/var/www/html/pr/apns.php");
+$interval=0;
 $uid=intval($_REQUEST['uid']);
-$internal=intval($_REQUEST['internal']);
-
+$interval=intval($_REQUEST['interval']);
 $user=db::row("select * from appuser where id=$uid");
 if($interval!=1 && ($user['fbid']==0 || $user['fbfriends']==0)){
   die(json_encode(array("title"=>"","msg"=>"Please login with Facebook before entering a bonus code")));
@@ -20,8 +20,8 @@ if($interval!=1){
  }
 }
 
-if($interval!=1 && $user['fbfriends']<4){
-  die(json_encode(array("title"=>"","msg"=>"Something's broken. We're looking into it")));
+if($interval!=1 && $user['fbfriends']<1){
+  die(json_encode(array("title"=>"","msg"=>"Not a verified fb account.")));
 }
 
 $code=stripslashes($_REQUEST['code']);
@@ -34,11 +34,16 @@ $mac=$_REQUEST['mac'];
 if($mac=='ios7device'){
  $usercnt=db::row("select count(1) as cnt from appuser where app='picrewards' and idfa='$idfa'");
 }else{
- $usercnt=db::row("select count(1) as cntfrom appuser where app='picrewards' and mac='$mac'");
+ $usercnt=db::row("select count(1) as cnt from appuser where app='picrewards' and mac='$mac'");
 }
 
 if($usercnt['cnt']>4 && $uid!=2902){
  die(json_encode(array("title"=>"Sorry","msg"=>"Bonus code hit daily limit")));
+}
+
+$tokens=db::row("select * from pushtoken where uid=$uid");
+if(!$token){
+// die(json_encode(array("title"=>"Sorry","msg"=>"Bonus code hit daily limit")));
 }
 
 $ipaddress=getRealIP();
@@ -55,33 +60,35 @@ if(!$agent){
  die(json_encode(array("title"=>"Bonus Code Not Found","msg"=>"Ask your friend for a bonus code.  or search Twitter/Google for #PhotoRewards")));
 }
 
-if($user['inviter_id']!=0 && $user['inviter_id']!=$agent['id']){
+if($user['inviter_id']!=0 && $user['inviter_id']!=$agent['id'] && $uid!=2902){
  $agentId=$user['inviter_id'];
  $agent=db::row("select * from appuser where id=$agentId");
  $code=$agent['username'];
 }
 
-if($agent['banned']==1 || $user['banned']==1){
+if($agent['banned']==1 || $user['banned']==1 || $user['banned']==2){
   $banned=1;
 }
 
 error_log(json_encode($agent));
-$admin=0;
-if($agent['role']!=0){
- $admin=1;
-}
-$admin=0;
 $reached100=1;
 $append="";
-if($user['stars']<100 && $admin==0){
+if($user['stars']<100 && $admin==0 && $user['ltv']<50){
  $reached100=0;
- $append="\n\n'".$code."' will receive his bonus automatically after you have accumulated 100 additional points\n";
+ die(json_encode(array("title"=>"","msg"=>"You must accumulate at least 100 points to enter a bonus code")));
+
+// $append="\n\n'".$code."' will receive his bonus automatically after you have accumulated 100 additional points\n";
 }
 
 $usercode=$user['username'];
 $deviceInfo=$user['deviceInfo'];
+if($deviceInfo=='iPod; |5_1_1' || $deviceInfo=='iPod; |5_0_1'){
+   die(json_encode(array("title"=>"Oh no!","msg"=>"Device not eligible")));
+}
+
 $device="iphone";
 if(stripos($deviceInfo,"ipod")!==false){
+   die(json_encode(array("title"=>"Oh no!","msg"=>"Device not eligible")));
  $device='ipod';
 }
 if(stripos($deviceInfo,"ipad")!==false){
@@ -97,7 +104,7 @@ $min=$agentXpinfo['minbonus'];
 $max=$agentXpinfo['maxbonus'];
 $bonus=$min;
 for(;$bonus<=$max;$bonus++){
-  if(rand(0,10)<2) break; 
+  if(rand(0,20)<2) break; 
 }
 
 $agentUid=$agent['id'];
@@ -106,12 +113,11 @@ $joinerNickname=$user['username'];
 
 $arefs="select count(distinct(substring_index(ipAddress,'.',3))) as ips, avg(ltv) as avgltv, count(1) as cnt 
 from appuser a join referral_bonuses b on a.id=b.joinerUid where b.agentUid=$agentUid and b.created>date_sub(now(), interval 2 day)";
-error_log($arefs);
 $arefs=db::row($arefs);
 $distIps=$arefs['ips'];
 
 $joiners=$arefs['cnt'];
-$points_to_joineer=intval($bonus/4);
+$points_to_joineer=intval($bonus/3);
 $points_to_agent=$bonus;
 $ratio=(double)$joiners/$distIps;
 if($device=='ipod'){
@@ -133,15 +139,17 @@ if($ratio>4){
   db::exec("update appuser set banned=1 where id=$agentUid");
   die(json_encode(array("title"=>"Sorry","msg"=>"This bonus code hit daily limit")));
 }
-$drefs="select count(distinct(deviceInfo)) as devicesCnt, count(1) as cnt
-from appuser a join referral_bonuses b on a.id=b.joinerUid where b.agentUid=$agentUid and b.created>date_sub(now(), interval 2 day)";
+$drefs="select count(distinct(deviceInfo)) as devicesCnt, count(1) as cnt from appuser a join referral_bonuses b on a.id=b.joinerUid where b.agentUid=$agentUid and b.created>date_sub(now(), interval 4 day)";
 error_log($drefs);
 $drefs=db::row($drefs);
 $dratio=(double)$drefs['cnt']/$drefs['devicesCnt'];
-error_log("device ration $dratio");
-if($drefs['cnt']>3 && $dratio>5){
+error_log("$uid device ration $dratio");
+if($dratio>3){
+  error_log("BONUSFRAUD not awarding bonus for ".json_encode($drefs));
+
    die(json_encode(array("title"=>"Sorry","msg"=>"This bonus code hit daily limit")));
 }
+
 if($agentUid==$joinerUid){
  die(json_encode(array("title"=>"Nope!","msg"=>"You cannot enter your own bonus code! Ask your friends!")));
 }
@@ -154,6 +162,7 @@ if($banned==0){
    $entered_bonus=2;
    $points_to_agent=0;
  }
+ error_log("update appuser set stars=stars+".$points_to_joineer.", has_entered_bonus=$entered_bonus, inviter_id=$agentUid where id=$joinerUid");
  db::exec("update appuser set stars=stars+".$points_to_joineer.", has_entered_bonus=$entered_bonus, inviter_id=$agentUid where id=$joinerUid");
  db::exec("insert into referral_bonuses set created=now(), agentUid=$agentUid, joinerUid=$joinerUid, points_to_agent=$points_to_agent, points_to_joiner=$points_to_joineer");
 }else{
@@ -161,7 +170,7 @@ if($banned==0){
 }
 
 if($joinerUid==2902 || $joinerUid==29184){
- db::exec("update appuser set has_entered_bonus=0 where id=$joinerUid limit 1");
+ db::exec("update appuser set has_entered_bonus=0, inviter_id=0 where id=$joinerUid limit 1");
 }
 
 $usercode=$user['username'];

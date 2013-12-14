@@ -24,6 +24,7 @@ $insert.=" where id=$oid";
 db::exec($insert);
 }
 
+
 $oid=intval($_GET['id']);
 $offer=db::row("select * from offers where id=$oid");
 ?>

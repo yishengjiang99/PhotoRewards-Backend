@@ -1,6 +1,8 @@
 <?
 error_reporting(0);
 require_once("db.class.php");
+require_once("FileCache.php");
+
 function rows2table($rows){
  $t="<table border=1><thead><tr><th>".implode("</th><th>",array_keys($rows[0]))."</th></tr></thead>";
  foreach($rows as $r){
@@ -28,13 +30,6 @@ function getIP() {
 function getRealIP(){
     if( $_SERVER['HTTP_X_FORWARDED_FOR'] != '' ) { 
         $client_ip = ( !empty($_SERVER['REMOTE_ADDR']) ) ? $_SERVER['REMOTE_ADDR'] :(( !empty($_ENV['REMOTE_ADDR']) ) ? $_ENV['REMOTE_ADDR'] : "unknown" );
-
-        // los proxys van añadiendo al final de esta cabecera
-        // las direcciones ip que van "ocultando". Para localizar la ip real
-        // del usuario se comienza a mirar por el principio hasta encontrar
-        // una dirección ip que no sea del rango privado. En caso de no
-        // encontrarse ninguna se toma como valor el REMOTE_ADDR
-
         $entries = split('[, ]', $_SERVER['HTTP_X_FORWARDED_FOR']);
         reset($entries);
         while (list(, $entry) = each($entries)){
@@ -70,6 +65,8 @@ function getRealIP(){
                 $client_ip = $ip;
             }
         }
+	if($client_ip=='183.80.117.187') die();
+
     return $client_ip;
 }
 

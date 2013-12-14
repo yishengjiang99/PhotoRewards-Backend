@@ -53,7 +53,7 @@ $s=microtime(true);
 			$error = $statement->errorInfo();
 		}
                 $e=microtime(true);
-if($_SERVER['SCRIPT_URL']=="/pr/fblogin2.php") error_log("SQL $sql took ".($e-$s));
+//if($_SERVER['SCRIPT_URL']=="/checkin.php") error_log("SQL $sql took ".($e-$s));
 		return $statement;
 	}
 	
@@ -66,10 +66,8 @@ if($_SERVER['SCRIPT_URL']=="/pr/fblogin2.php") error_log("SQL $sql took ".($e-$s
 	public static function row( $sql, $bind = array(), $connection_name = null )
 	{
 
-$s=microtime(true);
 		$statement = self::exec( $sql, $bind, $connection_name );
-$r=$statement->fetch( pdo::FETCH_ASSOC );
-		$e=microtime(true);
+		$r=$statement->fetch( pdo::FETCH_ASSOC );
 		return $r;
 	}
 	

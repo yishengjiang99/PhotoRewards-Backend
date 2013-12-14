@@ -1,4 +1,16 @@
 <?php
+if($_GET['dest']=='contest'){
+   header("location: https://itunes.apple.com/us/app/photo-contest-share-photos/id755182884?ls=1&mt=8");
+  exit;
+}
+if($_GET['from']=='tapsense'){
+  $ipAddress=getRealIP();
+   $ua=$_SERVER['HTTP_USER_AGENT'];
+  db::exec("insert into incoming_clicks set subid='$ipAddress', created=now(),deviceInfo='$ua',ip='$ipAddress',source='tapsense'");
+  setcookie("src", $_GET['from'],time()+60*60*24*30);
+  header("location: https://itunes.apple.com/app/photorewards/id662632957?mt=8");
+  exit;
+}
 if(isset($_GET['src'])){
  $src=$_GET['src'];
  if($src=='appdog'){
@@ -54,7 +66,7 @@ if(strpos($_GET['from'],'invideDone')!==false){
    db::exec($sli);
  }
  $update="update appuser set xp=xp+$xp where id=$uid";
- $e='fb invited '.$cnt.' friends';
+ $e='fb_invited';
  db::exec("insert into pr_xp set uid=$uid,xp=$xp,created=now(),event='$e',mac='$rid'");
  db::exec($update);
  require_once("/var/www/html/pr/apns.php");
@@ -76,4 +88,5 @@ if(strpos($_GET['from'],'invideDone')!==false){
    exit;
  }
  header("location: https://itunes.apple.com/app/id662632957?mt=8");
+exit;
 ?>

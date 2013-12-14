@@ -6,8 +6,6 @@ email: <input type=text name=email />
 <input type=submit />
 </form>
 <?php
-
-var_dump($_POST);
 if(isset($_POST) || isset($_GET)){
  require_once("/var/www/lib/functions.php");
  $username=$_POST['username'];

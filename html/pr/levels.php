@@ -16,11 +16,11 @@ $xplevel=array(
 );
 
 $levelminbonus=array(
-0=>200,
-1=>280,
-2=>320,
-3=>420,
-4=>480,
+0=>300,
+1=>380,
+2=>420,
+3=>460,
+4=>510,
 5=>556,
 6=>590,
 7=>650,
@@ -32,8 +32,8 @@ $levelminbonus=array(
 );
 
 $levelmax=array(
-0=>250,
-1=>300,
+0=>350,
+1=>420,
 2=>470,
 3=>1999,
 4=>2000,
@@ -47,12 +47,12 @@ $levelmax=array(
 12=>9500,
 );
 
-$multiplier=2;
+$multiplier=1.6;
 
 function getBonusPoints($myxp,$country='US'){
  global $xplevel, $levelminbonus, $levelmax,$multiplier;
  if(!$multiplier) $multiplier=1;
- if($country!='US' && $country!='CA' && $country!='GB') $multiplier=0.5;
+ if($country!='US' && $country!='CA' && $country!='GB' && $country!='AU' && $country!='NZ') $multiplier=0.7;
  if($country=='VN') $multiplier=0.4;
 
  $mylevel=0;
@@ -73,5 +73,6 @@ function getBonusPoints($myxp,$country='US'){
    $mylevel=$level;
    $lastlevelxp=$lxp;
  }
- return array('level'=>$mylevel,'xp'=>$myxp,'minbonus'=>intval($levelminbonus[$mylevel]*$multiplier),'maxbonus'=>intval($levelmax[$mylevel]*$multiplier),'levelPercentage'=>$tnl_percent,'bonusNextLevel'=>"$nextmin to $nextmax Points");
+ 
+ return array('level'=>$mylevel,'xp'=>$myxp,'minbonus'=>intval($levelminbonus[$mylevel]*$multiplier),'maxbonus'=>intval($levelmax[$mylevel]*$multiplier),'levelPercentage'=>intval($tnl_percent),'bonusNextLevel'=>"$nextmin to $nextmax Points");
 }

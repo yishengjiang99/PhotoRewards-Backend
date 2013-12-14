@@ -29,8 +29,8 @@ $user=db::row("select * from appuser where id=$uid");
 $idfa=$user['idfa'];
 $mac=$user['mac'];
 
-if(isset($_COOKIE['inviter']) && intval($_COOKIE['inviter'])!=0 && $user['inviter_id']==0){
-error_log("inviter ".$_COOKIE['inviter']." in the cookie");
+if(isset($_COOKIE['inviter']) && intval($_COOKIE['inviter'])!=0 && $user['inviter_id']==0 && $user['app']=='picrewards'){
+   error_log("inviter ".$_COOKIE['inviter']." in the cookie");
     $inviter=$_COOKIE['inviter'];
 }
 
@@ -51,25 +51,31 @@ if(isset($_COOKIE['idfa']) && $_COOKIE['idfa']!=$idfa){
  $multi.=$idfa;
  setcookie("multi",$multi,time()+60*60*24*2);
  error_log("setting rc to $rc".json_encode($_COOKIE)." idfa ".$idfa." history $multi");
- if($rc>7){
+ if($rc>5){
 	db::exec("update appuser set banned=1, note='different cookie value for idfa:$multi' where id=$uid");
  }
 }
 setcookie("idfa",$idfa,time()+60*60*24*30*12);
 setcookie("mac",$mac,time()+60*60*24*30*12);
+
 $update="update appuser set deviceInfo='$dinfo',country='$countrystr', source='$src',inviter_id=$inviter where id=$uid limit 1";
-error_log($update);
 db::exec($update);
+
 $sessionId=$uid;
-if($inviterId!=0){
+if($inviter!=0){
  $t=time();
  $h=md5($t.$idfa."what1sdns?");
- $inviter=db::row("select username from appuser where id=$inviterId");
+ $inviter=db::row("select username from appuser where id=$inviter");
  $code=$inviter['username'];
  $url="https://json999.com/pr/bonus.php?interval=1&uid=$uid&idfa=$idfa&t=$t&h=$h&code=$code";
  error_log($url);
- file_get_contents($url);
+ if($idfa!='(null)' && $dinfo!='iPod; |5_1_1') exec("curl '$url' > /dev/null 2>&1 &");
+ else {
+   error_log("BONUSFRAUD not curling bonus for $idfa $dinfo");
+ }
 }
+header("location: $cb://");
+exit;
 ?>
 <html>
 <head>

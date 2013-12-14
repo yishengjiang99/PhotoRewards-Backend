@@ -1,3 +1,4 @@
+
 <?php
 require_once("/var/www/lib/functions.php");
 require_once("/var/www/lib/firewall.php");
@@ -8,24 +9,63 @@ $mac=$_GET['mac'];
 $idfa=$_GET['idfa'];
 $cb=$_GET['cb'];
 $uid=intval($_GET['uid']);
+$rid=intval($_REQUEST['giftID']);
+if($idfa=="notios6yet"){
+        die(json_encode(array("title"=>"Please Upgrade to iOS 6 or 7","msg"=>"Please upgrade your iOS version. Be sure to login with Facebook before you upgrade to save your points")));
+}
+if($reward['Type']=="cross"){
+    die(json_encode(array("title"=>"FREE ".$reward['name'],"msg"=>"Click OK to download 'Photo Contest' now!","url"=>"http://json999.com/redirect.php?dest=contest&src=redeem")));
+ }
+if($rid==1 || $rid==4){
+//        die(json_encode(array("title"=>"","msg"=>"PayPal will be back on Tuesday morning")));
+}
 $user=db::row("select * from appuser where id=$uid");
+$reward=db::row("select * from rewards where id=$rid");
+if($reward['Points']>$user['stars']){
+ die(json_encode(array("title"=>"","msg"=>"You do not have enough points for this reward")));
+}
+if($user['banned']==1){
+ die(json_encode(array("title"=>"","msg"=>"Your account is under review. Please email support@photorewards.net with your username or facebook email")));
+
+}
+if($user['fbid']==0){
+ $cb="https://www.json999.com/pr/fblogin.php?uid=$uid";
+ $url="https://www.facebook.com/dialog/oauth?response_type=code&client_id=146678772188121&scope=email&redirect_uri=".urlencode($cb);
+ die(json_encode(array("title"=>"","msg"=>"Please login with Facebook to redeem.","url"=>$url)));
+}
+if($user['fbfriends']<0){
+//          die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
+}
+$daytime=date('H') >7 && date('H')<18;
+$highrisk=$user['visit_count']<120 && $ltv<300 && $user['fbfriends']<4 && ($user['country']=="GB" || in_array($user['locale'],array("","vi_VN","en_GB","es_LA","it_IT","vi_VN","zh_CN")));
+if($highrisk){
+  //      die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
+}
 
 $ltv=$user['ltv'];
+if($ltv<30){
+        die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
+}
+
 $ip=implode(".",array_slice(explode(".",$user['ipAddress']),0,3)).".";
 $banned=db::row("select * from bannedIps where ip='$ip'");
-
 if($banned){
       die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
 }
+
+/*
 $joinedDate=$user['created'];
 $pointsFromUserPictures=db::row("select sum(points_earned)/10 as t from UploadPictures where type='UserOffers' and uid=$uid");
 $pointsFromUserPictures=$pointsFromUserPictures['t'];
 $refP=db::row("select sum(points_to_agent)/10 as t from referral_bonuses where agentUid=$uid");
 $refP=$refP['t'];
 $usum="ltv=$ltv UPP=$pointsFromUserPictures refP=$refP";
+*/
+
 if($user['banned']==1){
  die(json_encode(array("title"=>"","msg"=>"Your account is under review. Please email yisheng@grepawk.com with your username or facebook email")));
 }
+
 $rid=intval($_REQUEST['giftID']);
 $reward=db::row("select * from rewards where id=$rid");
 error_log("redeem ".$user['stars']." VS  ".$reward['Points']."   ".json_encode($user));
@@ -37,11 +77,11 @@ if($reward['available']!=1 && $uid!=2902 && $uid!=7885){
  die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
 }
 if($reward['Type']=='gc'){
- $recent=db::row("select sum(Points) as t from reward_codes where rewarded_to_uid=$uid and date_redeemed>date_sub(now(), interval 3 hour)");
+ $recent=db::row("select sum(Points) as t from reward_codes a join rewards b on a.reward_id=b.id where rewarded_to_uid=$uid and date_redeemed>date_sub(now(), interval 3 hour)");
  $rt=$recent['t'];
- if($rt>4000){
-     error_log("velocity break");
-     die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
+ if($rt>500 && $uid!=2902){
+     error_log("velocity break: $rt");
+     die(json_encode(array("title"=>"zz","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
  }
  if($reward['requiresEmail']==1){
   $email="";
@@ -55,6 +95,7 @@ if($reward['Type']=='gc'){
     $url="https://www.json999.com/enterEmailForGC.php?rid=$rid&uid=$uid&h=$h&t=$t&idfa=$idfa&mac=$mac";
     die(json_encode(array("title"=>"Email required","msg"=>"****Further action required****\nClick 'GO' to enter your email address, which we will use to send you the gift card","url"=>$url)));
   }
+
   $email=stripslashes($_GET['email']);
   if(check_email_address($email)===FALSE){
        error_log("$email is not valid");
@@ -70,10 +111,11 @@ if($reward['Type']=='gc'){
  }
 
  $hascode=db::row("select 1 from reward_codes where given_out=0 and reward_id=$rid limit 1");
- if(!$hascode) die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
- error_log("update reward_codes set given_out=1, date_redeemed=now(),rewarded_to_uid=$uid where given_out=0 and reward_id=$rid limit 1");
+ if(!$hascode) {
+error_log("$uid redeemed $rid out of stuck");
+	die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
+  }
  db::exec("update reward_codes set given_out=1, date_redeemed=now(),rewarded_to_uid=$uid where given_out=0 and reward_id=$rid limit 1");
- error_log("select aes_decrypt(code,'supersimple') as code from reward_codes where reward_id=$rid, rewarded_to_uid=$uid, given_out=1 order by date_redeemed desc limit 1");
  $code=db::row("select id, aes_decrypt(code,'supersimple') as code from reward_codes where reward_id=$rid and rewarded_to_uid=$uid and given_out=1 order by date_redeemed desc limit 1");
  if(!$code) die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
 
@@ -87,7 +129,6 @@ if($reward['Type']=='gc'){
    db::exec("insert into gc_emails_delivery set uid=$uid,reward_id=".$code['id'].",email='$email',delivered=1,created=now()");
    email($email,"Your Amazon.com Gift Card Code from PhotoRewards",$template,"support@photorewards.net");
  }
- 
  if($email!='' && $rid==11){
    $codet=explode("|",$codestr);
    $urlcode=trim($codet[0]);
@@ -140,25 +181,25 @@ if($reward['Type']=='gc'){
  $balance=$user['stars'];
  $value=ceil($balance/10);
  if($value>950) $value=$value+50;
- $cnt=db::cols("select count(distinct transfer_to_user_id) from PaypalTransactions where created>date_sub(now(), interval 1 day) and email='$email'");
+ $cnt=db::cols("select count(distinct transfer_to_user_id) from PaypalTransactions where created>date_sub(now(), interval 10 day) and email='$email'");
  $cntint=$cnt[0];
  error_log("$cntint distinct user paying to $email");
  $status='init';
- if($cntint>5) {
+ if($cntint>3) {
         db::exec("update appuser set banned=1,note='$cntint users paying to same email' where id=$uid");
 	die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
  }
  $recent=db::cols("select sum(amount) as total from PaypalTransactions where created>date_sub(now(), interval 1 day) and email='$email'");
  $recent=$cnt[0];
  error_log("$recent amount paied to $email");
- if($recent>1000) die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
-
+ if($recent>400) die(json_encode(array("title"=>"","msg"=>"Sorry! This reward is out of stock! Check back tomorrow!")));
  db::exec("update appuser set stars=0 where id=$uid");
  $trxid=time().$uid;
  db::exec("insert into PaypalTransactions set transfer_to_user_id=$uid,email='$email',status='$status',amount='$value',masspay_trx_id=$trxid,created=now()"); 
  $cmd="php /var/www/tools/masspay.php  > /dev/null 2>&1 &";
  exec($cmd);
- die(json_encode(array("title"=>"You win!","msg"=>"PayPal payments will be made to $email shortly.\n\nLike PhotoRewards? Please take a moment to rate us in the App Store.",'url'=>'http://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?pageNumber=0&sortOrdering=1&type=Purple+Software&mt=8&id=662632957')));
+ die(json_encode(array("title"=>"You win!","msg"=>"PayPal payments of $value cents will be made to $email shortly.")));
+// \n\nLike PhotoRewards? Please take a moment to rate us in the App Store.",'url'=>'http://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?pageNumber=0&sortOrdering=1&type=Purple+Software&mt=8&id=662632957')));
 }else if ($reward['Type']=="iap"){
  die(json_encode(array("title"=>"You win!","msg"=>"You have been awarded with ".$reward['name']."\nWould you like to use your reward now?","url"=>$reward['action'])));
 }

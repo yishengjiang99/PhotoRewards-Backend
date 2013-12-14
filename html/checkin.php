@@ -1,8 +1,7 @@
 <?php
-$t1=microtime();
+$t1=microtime(true);
 require_once("/var/www/lib/functions.php");
 $ip=getRealIP();
-
 $mac=$_GET['mac'];
 $idfa=$_GET['idfa'];
 $cb=$_GET['cb'];
@@ -12,11 +11,14 @@ if(strpos($ua,"PictureRewards/1.3")!==false){
  $reviewer=1;
 }
 $uid=intval($_GET['uid']);
-if($mac=='ios7device'){
+if($uid){
+ $user=db::row("select * from appuser where id=$uid");
+}
+else if($mac=='ios7device'){
   $user=db::row("select * from appuser where app='$cb' and idfa='$idfa' order by id limit 1");
   if($user && $user['idfa']!=$idfa){
     $uid=$user['id'];
-    db::exec("update appuser set idfa='$idfa' where id=$uid");
+     db::exec("update appuser set idfa='$idfa' where id=$uid");
   }
 }else if($idfa=='notios6yet' || $idfa=='(null)'){
   $user=db::row("select * from appuser where app='$cb' and mac='$mac' order by id limit 1");
@@ -51,24 +53,20 @@ if($cb=="stockalerts"){
 		$config['gmurl']="https://www.json999.com/redirect.php?from=stockalert";
 	}
 }
-if($newuser==1 && ($cb=='stockalerts' || $cb=="slide" || $cb=="projectilefree" || $cb=="projectile")){
- $cbIds=array("stockalerts"=>642101022,"slide"=>648179171,'projectile'=>644641252,'projectilefree'=>644782348);
+$cbIds=array("stockalerts"=>642101022,"slide"=>648179171,'projectile'=>644641252,'projectilefree'=>644782348,"contest"=>755182884);
+if($newuser==1 && isset($cbIds[$cb])){
  $appid=$cbIds[$cb];
  $prcb="https://json999.com/sponsored_callback.php?mac=$mac&idfa=$idfa&storeID=$appid&pw=dafhfadsfkdsadlds";
  exec("curl '$prcb' > /dev/null 2>&1 &");
  error_log($prcb);
 }
-$t4=microtime();
-if($cb=="picrewardsdev" || $cb=="picrewards"){
+
+if($cb=="picrewardsdev" || $cb=="picrewards" || $cb=="contest"){
  require_once("/var/www/html/pr/levels.php");
  $nickname=$user['username'];
  if($nickname==''){
-   $nickname=db::row("select * from available_nicknames where taken=0 order by rand() limit 1");
-   $uname=$nickname['nickname'];
-   db::exec("update available_nicknames set taken=1, uid=$uid where nickname='$uname'");
-   db::exec("update appuser set username='$uname' where id=$uid");
-   $nickname=$uname;
- }
+     $nickname='newuser';
+  }
  $config['nickname']=$nickname;
  $config['fbcaption']="Upload Pictures; Earn Free Rewards";
  $xpinfo=getBonusPoints($user['xp'],$user['country']);
@@ -85,14 +83,24 @@ if($cb=="picrewardsdev" || $cb=="picrewards"){
  "bidtiers"=>array(1,2,3,4,5),
 // "myNumber"=>"tel://6508046836"
  );
+
  $deviceInfo=$user['deviceInfo'];
  if($deviceInfo=="" && $reviewer==0){
    $config['um']='y';
-   $config['checkup']="https://www.json999.com/deviceInfo.php?uid=$uid&cb=picrewards&idfa=$idfa";
+   $config['checkup']="https://www.json999.com/deviceInfo.php?uid=$uid&cb=$cb&idfa=$idfa";
  }
  $config['dir']="You must try this app and take a screenshot from within the app before you can upload a picture!\nClick OK to download from the App Store!";
  $config['cc']="Off-Topic,Spammer,Explicit Content, Kiks,Religious Intolerance,Racial intolerance,Excessive Profanity,Poor Quality";
+ if($cb=="contest"){
+   $username=$user['username'];
+   $config['postJoin']="To share with friends and ask them for 5-star ratings, ask them to search for username '$username' in the search bar";
+   $config['menu']="Free App|Leader Board|Recent Winners";
+   $config['searchBarPlaceHolder']="Search for usernames or hashtags";
+   $config['email']=$user['email'];
+   $config['cmd']= "Command List:\n1. type 'change username [new name]' (currently $username).\n2. Type change email [your email address] to change email.".
+ "\n3. Type 'login fb' to login with Facebook.\n4. Type 'history' to see history.\n5. Type 'friends' to see who gave you 5 stars";
+  $config['cmd']= "Coming soon";
+ } 
  $config=array_merge($config,$bidconfig);
 }
-$t2=microtime();
 die(json_encode($config));
