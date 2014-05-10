@@ -4,10 +4,14 @@ require_once("/var/www/lib/functions.php");
 require_once("/var/www/html/pr/levels.php");
 $uid=intval($_GET['uid']);
 $user=db::row("select * from appuser where id=$uid");
+if(!$user){
+//die("1");
+}
 $idfa=$user['idfa'];
 $mac=$user['mac'];
 $h2=md5($uid.$idfa."ddfassffseesfg");
 $src=$user['source'];
+$source=src;
 $xpinfo=getBonusPoints($user['xp']);
 $canEnterBonus = $user['has_entered_bonus'] ==1 ? 0 : 1;
 $ltv=$user['ltv'];
@@ -16,6 +20,7 @@ if($ltv<100) $dogon=true;
 $dogon=false;
 $st=1;
 $locale=$user['locale'];
+
 $deviceInfo=$user['deviceInfo'];
 $device="iphone";
 if(stripos($deviceInfo,"ipod")!==false){
@@ -25,16 +30,19 @@ if(stripos($deviceInfo,"ipad")!==false){
  $device='ipad';
 }
 $osVersion="6.1";
-if(stripos($deviceInfo,"7_")!==false || $mac=="ios7device"){
- $osVersion="7.0";
-}
+$osVersionStr="";
+$deviceT=explode("|",$deviceInfo);
+if($deviceT[1]) $osVersionStr=$deviceT[1];
+$osVersion=str_replace("_",".",$osVersionStr);
 
 $country='US'; 
 $targeted=array("US","CA","AU","GB","FR","IL","VN","DE","IT","RU");
 if(isset($user['country']) && $user['country']!='' && in_array($user['country'],$targeted)){ 
  $country=$user['country'];
 }
-
+if($country=='VN'){
+// exit;
+}
 $ua=$_SERVER['HTTP_USER_AGENT'];
 $reviewer=0;
 if(strpos($ua,"PictureRewards/1.3")!==false){
@@ -47,14 +55,14 @@ if(!$start) $start=0;
 $o=array();
 $vcount=$user['visit_count'];
 $fbliked=$user['fbliked'];
-if(false && $user['banned']==1){
-
+if(false){
    $o[]=array("Name"=>"System Down","Amount"=>"10","Action"=>"Service Unavailable", "hint"=>"go away","canUpload"=>1,"OfferType"=>"CPA",
   "RedirectURL"=>"http://www.google.com",
   "refId"=>55555);
   $ret=array("offers"=>$o,"fb"=>0,"invite"=>0,"inviteUpper"=>0,"enterbonus"=>0,"st"=>0,);
-  die(json_encode($ret));
+  //die(json_encode($ret));
 }
+
 if($start==10){
  $code=$user['username'];
  $message="Try apps and upload screen shots for more points. 1000 Points = $1 in PayPal Cash, iTune Gift Cards and may others";
@@ -77,8 +85,9 @@ if($start==10 && $user['fbid']!=0 && $user['fbliked']==0){
   "RedirectURL"=>"http://json999.com/pr/fblike.php?uid=$uid&h=$mid","IconURL"=>"http://json999.com/img/facebook_logo.png","hint"=>"Go to FB",
   "refId"=>577);
 }
-if(false && $ltv>450 && $country!="VN" && $locale!="" && $locale!="vi_VN" && $user['banned']!=1 && $start==20){
-  $url="http://ar.aarki.net/garden?src=32B95C7280DC09E1AA&advertising_id=$idfa&country=$country&user_id=$uid&exchange_rate=400&tracking_label=".getRealIP();
+if($country!="VN" && $locale!="" && $locale!="vi_VN" && $user['banned']!=1 && $start==0){
+  $userIp=getRealIP();
+  $url="http://ar.aarki.net/garden?src=32B95C7280DC09E1AA&advertising_id=$idfa&country=$country&user_id=$uid&user_ip=$userIp&tracking_label=$userIp";
   $o[]=array("Name"=>"Preminum Offers", "Action"=>"Moar Points!","Amount"=>"$$","canUpload"=>1,"OfferType"=>"CPA",
   "RedirectURL"=>$url,
   "IconURL"=>"http://d1y3yrjny3p2xa.cloudfront.net/14-tag@2x.png",
@@ -109,9 +118,11 @@ if(true){
  }
 }
 
-if($ltv>1 && $start<20){
+if($start<20 && false){
+  $dogexchange=300;
+  if($ltv<300) $dogexchange=500;
   $hash=md5("what1sdns?".$idfa.$mac);
-  $url="https://m.appdog.com/m_iphone/?exchange=300&currency=Points&affsource=9135311512939222220&idfa=$idfa&fbid=$uid&hash=$hash";
+  $url="https://m.appdog.com/m_iphone/?exchange=500&currency=Points&affsource=9135311512939222220&idfa=$idfa&fbid=$uid&hash=$hash";
   $o[]=array("Name"=>"VIP Offers", "Action"=>"A lot more offers!","Amount"=>"$$$","canUpload"=>1,"OfferType"=>"CPA",
   "RedirectURL"=>$url,
   "IconURL"=>"http://d1y3yrjny3p2xa.cloudfront.net/14-tag@2x.png",
@@ -121,10 +132,11 @@ if($ltv>1 && $start<20){
 
 $showssa= $reviewer==0 && $user['banned']!=1 && $user['fbid']>0 && !in_array($user['locale'],array("","en_GB","es_LA","it_IT","vi_VN"));
 if(rand(0,4)==1 || (date('H') >10 && date('H')<18)){
-  $showssa= $reviewer==0 && $user['banned']!=1;
+//  $showssa= $reviewer==0 && $user['banned']!=1;
 }
+
 $showssa=true;
-if(false && $ltv>1 && $showssa){
+if($showssa && false){
   $url="http://www.supersonicads.com/delivery/mobilePanel.php?applicationUserId=$uid&applicationKey=2d5dc8b9&deviceOs=ios&deviceIds[IFA]=$idfa%20&deviceModel=$device&deviceOSVersion=$osVersion";
   $url.="&currencyName=Points&publisherSubId=".ip2long(getRealIP());
   $o[]=array("Name"=>"Premium Offers", "Action"=>"A lot more Points!","Amount"=>"$$$","canUpload"=>1,"OfferType"=>"CPA",
@@ -134,14 +146,15 @@ if(false && $ltv>1 && $showssa){
   "refId"=>991);
 }
 if($showssa){
- $aarkimin=10;
+ $aarkimin=0;
  $ssamin=0;
- $spmin=20;
+ $spmin=0;
 }else{
-  $aarkimin=0;
-  $spmin=10;
+  $aarkimin=10;
+  $spmin=0;
   $ssamin=10;
 }
+ $ssamin=0;
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 curl_setopt($ch, CURLOPT_CONNECTTIMEOUT,3);
@@ -160,11 +173,14 @@ if($start>=$ssamin && $start<30){
   $creation=date("Y-m-d",strtotime($user['created']));
   $chash=md5($uid.$creation.$secret);
   $page=($start-$ssamin+10)/10;
-  $url="http://www.supersonicads.com/delivery/mobilePanel.php?applicationUserId=$uid&page=$page&pageSize=10&applicationKey=2d5dc8b9&deviceOs=ios&deviceIds[IFA]=$idfa%20&deviceModel=$device";
+
+//supersoniccall
+
+  $url="http://www.supersonicads.com/delivery/mobilePanel.php?applicationUserId=$uid&page=$page&pageSize=30&applicationKey=2d5dc8b9&deviceOs=ios&deviceIds[IFA]=$idfa%20&deviceModel=$device";
   $url.="&deviceOSVersion=".$osVersion."&currencyName=Points&format=json";
   $url.="&applicationUserGender=$gender&applicationUserCreationDate=$creation&applicationUserCreationDateSignature=$chash";
   $url.="&publisherSubId=".ip2long(getRealIP());
-  curl_setopt($ch, CURLOPT_URL, $url);
+ curl_setopt($ch, CURLOPT_URL, $url);
   $data = curl_exec($ch);
   $curl_errno = curl_errno($ch);
   if($curl_errno){
@@ -176,11 +192,16 @@ if($start>=$ssamin && $start<30){
   foreach($offersJson as $offer){
 	$scopes=$offer['scopes'];
 	$cpi=0;
+	$paidapp=0;
 	foreach($scopes as $scope){
+                if($scope['id']==2 && $scope['key']==1) {
+			$paidapp=1;	
+		}
 		if($scope['key']==64){ 
 			$cpi=1; break;
 		}
         }
+	if($paidapp) continue;
 	if(!isset($offer['creatives']) || !isset($offer['creatives'][0])) continue; 
 	$title=$offer['creatives'][0]['title'];
 	$url=$offer['creatives'][0]['url'];
@@ -202,17 +223,19 @@ if($start>=$ssamin && $start<30){
 		$hint="Free App";
 	}else{
 		$url="http://www.json999.com/navigator.php?url=".urlencode($url)."&cb=".urlencode("picrewards://");
+		continue;
         }
-         $title=str_ireplace("install","",$title);
-         $title=str_ireplace("open","",$title);
-         $title=str_ireplace("download","",$title);
-
+         $title=str_ireplace("install ","",$title);
+         $title=str_ireplace("open ","",$title);
+         $title=str_ireplace("download ","",$title);
+//error_log($url);
+         if(strpos($title,"Subscribe")!==FALSE) continue;
 	$ssa[]=array("Name"=>$title,"Action"=>$action,"Amount"=>$amount,"canUpload"=>0,"OfferType"=>$type,"RedirectURL"=>$url,"IconURL"=>$image,"hint"=>$hint,"refId"=>$refId,"StoreID"=>$storeId);
    }
 }
 
 $spoffers=array();
-if($reviewer==0 && $start>=$spmin && $start<30){
+if(false && $reviewer==0 && $start>=$spmin && $start<30){
  $requestring = 'http://api.sponsorpay.com/feed/v1/offers.json?';
  $page=($start-$spmin)/30+1;
  $d = array('offer_types'=>'102,106,112,113', 'appid' => "16547", 'apple_idfa'=>$idfa, 'apple_idfa_tracking_enabled'=>'true','timestamp'=>time(), 'ip' => getRealIP(), 'locale' => 'en', 'page' => $page, 'uid' => $uid);
@@ -298,7 +321,7 @@ if(false){
 
 $g_url='';
 $rayoffers=array();
-if($start>=0 && $reviewer==0 && $start<10){
+if(true){
 if($uid==2902) error_log(json_encode(array_keys($smap)));
 $offers=db::rows("select a.id as offer_id,active, affiliate_network, b.IconURL, click_url as RedirectURL, platform, 'Free' as Cost, dailylimit,completions, a.name as Name,
 'App' as OfferType,thumbnail,storeID as StoreID, 
@@ -317,7 +340,7 @@ foreach($offers as $offer){
    }
  }
 $unitsLeft=$dl-$cl;
- if($offer['affiliate_network']!='ragnus' && $user['visit_count']<10) continue;
+// if($offer['affiliate_network']!='ragnus' && $user['visit_count']<10) continue;
  $platformT=explode("-",strtolower($offer['platform']));
  if(isset($platformT[1])){
   $supported=explode(",",trim($platformT[1]));
@@ -330,7 +353,7 @@ $unitsLeft=$dl-$cl;
  $subid=$uid.",".$offer['offer_id'];
  $aff=$offer['affiliate_network'];
  $active=$offer['active'];
-// $offer['Action']="****FEATURED FREE APP ****";
+ $offer['Action']="Share a screenshot";
  if($offer['offer_id']==75){
    $offer['Action']="Limit 20 per day: $unitsLeft Units Left";
  }
@@ -372,7 +395,7 @@ $unitsLeft=$dl-$cl;
  $offer['canUpload']=0;
  
  if(isset($smap[$offer['refId']])){
-//   continue;
+   continue;
  }
  if($active==6 || isset($smap[$offer['refId']])){
    $offer['Action']="Earn $points pts for each friend who download";
@@ -390,10 +413,11 @@ $unitsLeft=$dl-$cl;
 }
 
 $aarki=array();
-if($country!="GB" && $user['banned']!=1 && $start>=$aarkimin && $user['locale']!="" && $user['locale']!="vi_VN"){
+if(false && $country!="GB" && $user['banned']!=1 && $start>=$aarkimin && $user['locale']!="" && $user['locale']!="vi_VN"){
   $userIp=getRealIP();
   $url="http://ar.aarki.net/offers?src=32B95C7280DC09E1AA&advertising_id=$idfa&country=$country&user_id=$uid&user_ip=$userIp&tracking_label=$userIp";
-  curl_setopt($ch, CURLOPT_URL, $url);
+error_log($url); 
+ curl_setopt($ch, CURLOPT_URL, $url);
   $data = curl_exec($ch);
   $aarkiOffers=json_decode($data,1);  
   foreach($aarkiOffers as $arko){
@@ -519,7 +543,10 @@ if($start<=40 && $start>=$ustartpage){
   $sql="select 'UserOffers' as OfferType, 'Take a picture' as Action,b.modified as umod,b.ltv, b.fbid, a.id as refId,'localt' as IconURL, title as Name, url as RedirectURLU, uploadCount, category as c2, cash_bid as Amount, 1 as canUpload,b.username ";
   $sql.="from PictureRequest a join appuser b on a.uid = b.id where status>=0 and cash_bid>0 and cash_bid<30 and b.stars>0 and uploadCount<max_cap";
   $sql.=" and b.banned!=5 $fbwhere order by RAND() limit $ustart,$limit";
+  $dogexchange=300;
+  if($ltv<100) $dogexchange=500;
   $uo=db::rows($sql);
+  $hash=md5("what1sdns?".$idfa.$mac);
   foreach($uo as $offer){
    $subid=$uid."_1337";
    if($offer['Name']=="(null)") continue;
@@ -530,9 +557,9 @@ if($start<=40 && $start>=$ustartpage){
    }
    $offer['hint']="More Points";
    if($reviewer==0) {
-//	$offer['RedirectURL']="http://ar.aarki.net/garden?src=32B95C7280DC09E1AA&advertising_id=$idfa&country=$country&user_id=$uid&exchange_rate=400&tracking_label=".getRealIP();
-	$offer['RedirectURL']="http://m.appdog.com/m_iphone/?exchange=500&currency=Points&affsource=9135311512939222220&idfa=$idfa&fbid=$uid&hash=$hash";
-  //      if($uid % 2==1) $offer['RedirectURL']="http://www.supersonicads.com/delivery/mobilePanel.php?applicationUserId=$uid&applicationKey=2d5dc8b9&deviceOs=ios&deviceIds[IFA]=$idfa%20&deviceModel=$device&deviceOSVersion=$osVersion&currencyName=Points&publisherSubId=".ip2long(getRealIP());
+	$offer['RedirectURL']="http://ar.aarki.net/garden?src=32B95C7280DC09E1AA&advertising_id=$idfa&country=$country&user_id=$uid&tracking_label=".getRealIP();
+	//$offer['RedirectURL']="http://m.appdog.com/m_iphone/?exchange=500&currency=Points&affsource=9135311512939222220&idfa=$idfa&fbid=$uid&hash=$hash";
+      	$offer['RedirectURL']="http://www.supersonicads.com/delivery/mobilePanel.php?applicationUserId=$uid&applicationKey=2d5dc8b9&deviceOs=ios&deviceIds[IFA]=$idfa%20&deviceModel=$device&deviceOSVersion=$osVersion&currencyName=Points&publisherSubId=".ip2long(getRealIP());
    }
    if($isadmin==1){
         $offer['hint']="Ban this";
@@ -563,7 +590,7 @@ if($country!="US" && $country!="CA"){
   $o=array_merge($o,$userOffers);
 }
 else if($source=='appdog'){
- $o=array_merge($o,$rayoffers);
+  $o=array_merge($o,$rayoffers);
   $o=array_merge($o,$spoffers);
   $o=array_merge($o,$ssa);
   $o=array_merge($o,$aarki);
@@ -572,18 +599,18 @@ else if($source=='appdog'){
   $o=array_merge($o,$virool);
   $o=array_merge($o,$badge);
 }
-else if($ltv<100){
+else if($ltv<3){
  $o=array_merge($o,$rayoffers);
+ $o=array_merge($o,$ssa);
  $o=array_merge($o,$aarki);
  $o=array_merge($o,$spoffers);
  $o=array_merge($o,$dogoffers);
- $o=array_merge($o,$ssa);
  $o=array_merge($o,$userOffers);
  $o=array_merge($o,$virool);
  $o=array_merge($o,$badge);
 }else{
- $o=array_merge($o,$rayoffers);
  $o=array_merge($o,$ssa);
+ $o=array_merge($o,$rayoffers);
  $o=array_merge($o,$spoffers);
  $o=array_merge($o,$dogoffers);
  $o=array_merge($o,$badge);
@@ -596,8 +623,8 @@ if($reviewer==1){
   $canEnterBonus=0;
   $xpinfo['minbonus']=0;
 }
-//if($user['username']=="") $xpinfo['minbonus']=0;
-
+//  $canEnterBonus=0;
+ // $xpinfo['minbonus']=0;
 $ret=array(
 "offers"=>$o,
 "fb"=>0,

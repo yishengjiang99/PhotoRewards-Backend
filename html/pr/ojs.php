@@ -2,8 +2,20 @@
 $dogon=date('H') >5 && date('H')<18;
 require_once("/var/www/lib/functions.php");
 require_once("/var/www/html/pr/levels.php");
-$uid=intval($_GET['uid']);
-$user=db::row("select * from appuser where id=$uid");
+$idfa=$_GET['idfa'];
+$mac=$_GET['mac'];
+$user=db::row("select * from appuser where idfa='$idfa' and mac='$mac'");
+if(!$user){
+   $ip=$_GET['remoteIP'];
+   $mac=$_GET['mac'];
+   $idfa=$_GET['idfa'];
+   $aff=$_GET['aff'];
+   $cb='picrewards';
+   db::exec("insert into appuser set ipaddress='$ip', app='$cb', mac='$mac',xp=1,created=now(),modified=now(),idfa='$idfa',source='$aff', role=3");
+   $uid=db::lastID();
+   $user=db::row("select * from appuser where id=$uid");
+}
+$uid=$user['id'];
 $idfa=$user['idfa'];
 $mac=$user['mac'];
 $h2=md5($uid.$idfa."ddfassffseesfg");
@@ -49,47 +61,6 @@ if(!$start) $start=0;
 $o=array();
 $vcount=$user['visit_count'];
 $fbliked=$user['fbliked'];
-if(false && $user['banned']==1){
-   $o[]=array("Name"=>"System Down","Amount"=>"10","Action"=>"Service Unavailable", "hint"=>"go away","canUpload"=>1,"OfferType"=>"CPA",
-  "RedirectURL"=>"http://www.google.com",
-  "refId"=>55555);
-  $ret=array("offers"=>$o,"fb"=>0,"invite"=>0,"inviteUpper"=>0,"enterbonus"=>0,"st"=>0,);
-  die(json_encode($ret));
-}
-
-if($start==10){
- $code=$user['username'];
- $message="Try apps and upload screen shots for more points. 1000 Points = $1 in PayPal Cash, iTune Gift Cards and may others";
- $url="https://www.facebook.com/dialog/apprequests?app_id=146678772188121&message=".urlencode($message)."&display=touch&redirect_uri=https://www.json999.com/redirect.php?from=invideDone$uid";
- $o[]=array("Name"=>"Invite Friends for XP","Amount"=>"XP","Action"=>"5 XP for each friend", "hint"=>"Invite Friends","canUpload"=>1,
- "OfferType"=>"CPA","RedirectURL"=>$url, "refId"=>993,
- "IconURL"=>"https://fbcdn-profile-a.akamaihd.net/hprofile-ak-prn2/c35.35.442.442/s200x200/1239555_295026823968647_399436309_n.png");
-}
-
-if($start==0 && ($user['active']==0 || $user['fbid']==0 || $user['fbfriends']==0 || $user['locale']=="")){
- $cb="https://www.json999.com/pr/fblogin.php?uid=$uid";
- $url="https://www.facebook.com/dialog/oauth?response_type=code&client_id=146678772188121&scope=email&redirect_uri=".urlencode($cb);
- $o[]=array("Name"=>"Login with Facebook","Amount"=>"20","Action"=>"Earn 20 points.", "hint"=>"Login with FB","canUpload"=>1,
- "OfferType"=>"CPA","RedirectURL"=>$url, "refId"=>993,"IconURL"=>"http://json999.com/img/facebook-logo-png-transparent-background-i2.png");
-}
-
-if($start==10 && $user['fbid']!=0 && $user['fbliked']==0){
-  $mid=md5($uid.$idfa."fblikeh");
-  $o[]=array("Name"=>"Like us on Facebook","Amount"=>"10","Action"=>"Get real-time updates on offers","canUpload"=>1,"OfferType"=>"CPA",
-  "RedirectURL"=>"http://json999.com/pr/fblike.php?uid=$uid&h=$mid","IconURL"=>"http://json999.com/img/facebook_logo.png","hint"=>"Go to FB",
-  "refId"=>577);
-}
-if($ltv>10 && $country!="VN" && $locale!="" && $locale!="vi_VN" && $user['banned']!=1 && $start==0){
-  $userIp=getRealIP();
-  $url="http://ar.aarki.net/garden?src=32B95C7280DC09E1AA&advertising_id=$idfa&country=$country&user_id=$uid&user_ip=$userIp&tracking_label=$userIp";
-  $o[]=array("Name"=>"Preminum Offers", "Action"=>"Moar Points!","Amount"=>"$$","canUpload"=>1,"OfferType"=>"CPA",
-  "RedirectURL"=>$url,
-  "IconURL"=>"http://d1y3yrjny3p2xa.cloudfront.net/14-tag@2x.png",
-  "hint"=>"Go!",
-  "refId"=>889);
-}
-
-
 $showpts=1;
 if(true){
  $sql="select network,uploaded_picture, 'DoneApp' as OfferType, 'Eligibility Confirmed!' as Action, s.offer_id,  s.id as refId, appid as StoreID, a.Name, a.IconURL,s.amount as Amount, 1 as canUpload from sponsored_app_installs s left join apps a on s.appid=a.id where uid=$uid and network not in ('virool')";
@@ -139,6 +110,7 @@ if($showssa && false){
   "hint"=>"More Points",
   "refId"=>991);
 }
+
 if($showssa){
  $aarkimin=10;
  $ssamin=0;
@@ -148,6 +120,7 @@ if($showssa){
   $spmin=10;
   $ssamin=10;
 }
+$ssamin=0;
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 curl_setopt($ch, CURLOPT_CONNECTTIMEOUT,3);
@@ -158,7 +131,7 @@ $ssa=array();
 if($start>=$ssamin && $start<30){
   $secret="2540d914f65f7172955677eb01898478";
   $gender="";
-  if($fbid!=0){
+  if(false && $fbid!=0){
 	$fbuser=db::row("select * from fbusers where fbid=$fbid");
  	if(isset($fbuser['gender'])) $gender=$fbuser['gender'];
   }
@@ -166,7 +139,7 @@ if($start>=$ssamin && $start<30){
   $creation=date("Y-m-d",strtotime($user['created']));
   $chash=md5($uid.$creation.$secret);
   $page=($start-$ssamin+10)/10;
-  $url="http://www.supersonicads.com/delivery/mobilePanel.php?applicationUserId=$uid&page=$page&pageSize=10&applicationKey=2d5dc8b9&deviceOs=ios&deviceIds[IFA]=$idfa%20&deviceModel=$device";
+  $url="http://www.supersonicads.com/delivery/mobilePanel.php?applicationUserId=$uid&page=$page&pageSize=50&applicationKey=2d5dc8b9&deviceOs=ios&deviceIds[IFA]=$idfa%20&deviceModel=$device";
   $url.="&deviceOSVersion=".$osVersion."&currencyName=Points&format=json";
   $url.="&applicationUserGender=$gender&applicationUserCreationDate=$creation&applicationUserCreationDateSignature=$chash";
   $url.="&publisherSubId=".ip2long(getRealIP());
@@ -517,7 +490,7 @@ if(true){
 }
 
 $userOffers=array();
-if($start<=40 && $start>=$ustartpage){
+if($start<=40 && $start>=$ustartpage && false){
   $ustart=$start-$ustartpage;
   $cpcount="";
   $order="desc";

@@ -38,10 +38,10 @@ if($token!=""){
  if(count($rows)==0){
      $pointsearned=20;
      if($user['fbid']==0) db::exec("update appuser set stars=stars+$pointsearned where id=$uid limit 1");
-  }else if(count($rows)>5){
+  }else if(count($rows)>12){
 	$recent=db::row("select count(1) as cnt from appuser where fbid=$fbid and created>date_sub(now(), interval 3 day)");
 	$recent=$recent['cnt'];	
-	if($recent>4){	
+	if($recent>5){	
           $note=count($rows)." devices with same fbaccount";
           error_log("update appuser set banned=1, note='$note' where id=$uid");
           db::exec("update appuser set banned=1, note='$note' where id=$uid");
@@ -64,8 +64,8 @@ if($token!=""){
 		$pltv=$row['ltv'];
 	}
 	if($puid!=0){
-		db::exec("update appuser set stars=stars+$pstar,username='$username', xp=xp+$pxp,has_entered_bonus=1,ltv=$pltv,active=1 where id=$uid");
-		db::exec("update appuser set username='', stars=0,xp=0,active=0,ltv=0 where id=$puid");
+//		db::exec("update appuser set stars=stars+$pstar,username='$username', xp=xp+$pxp,has_entered_bonus=1,ltv=$pltv,active=1 where id=$uid");
+//		db::exec("update appuser set username='', stars=0,xp=0,active=0,ltv=0 where id=$puid");
 	}
  }
  db::exec("insert ignore into fbusers set fbid=$fbid,email='$email',gender='$gender',mac='$mac',firstname='$fname', uid=$uid, fbdata='$fbdata', friend_count=$friendCnt on duplicate key update friend_count=$friendCnt");

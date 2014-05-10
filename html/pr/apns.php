@@ -14,7 +14,7 @@ function apnsUser($uid,$badge,$iam="",$url=""){
  $iam=urlencode($iam);
  $url=urlencode($url);
  $cmdstr= "php /var/www/html/pr/apns.php ".$uid."432".$badge."432".$iam."432".$url." > /dev/null 2>&1 &";
- error_log($cmdstr);
+ //error_log($cmdstr);
  exec($cmdstr);
 }
 

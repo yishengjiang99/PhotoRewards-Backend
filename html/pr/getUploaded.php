@@ -82,7 +82,7 @@ if($type=="DoneApp"){
 } 
 else if($type=="App" && $storeId!=""){
  $sql="select shared, title, a.id, type, liked, a.uid, points_earned,username,compressed, fbid from UploadPictures a left join appuser b on a.uid=b.id 
- where offer_id='$storeId' and (reviewed>=1 OR a.uid=$uid) order by a.uid=$uid, RAND() limit 10";
+ where offer_id='$storeId' and (reviewed>=1 OR a.uid=$uid) order by a.uid=$uid, created limit 10";
 }else if($type=="UserOffers"){
   $sql="select shared, title, a.id, type, liked, a.uid, points_earned,username, compressed,fbid from UploadPictures a left join appuser b on a.uid=b.id where refId='$refId' and type='UserOffers' and reviewed>=0 and points_earned>0 and banned<5 order by a.uid=$uid desc limit 15";
 }else if($type=='MyUploads'){

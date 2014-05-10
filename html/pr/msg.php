@@ -52,7 +52,7 @@ if($replyTo==3 || $msg=="spin"){
      $pwin=0;
      $user= db::row("select ltv,banned,tracking from appuser where id=$from");
      if($user['tracking']>=10 && $uid!=2902) die(json_encode(array("title"=>"***SLOT MACHINE***","msg"=>"You have no more spins today; come back tomorrow!")));
-     if($user['ltv']<10) die(json_encode(array("title"=>"***SLOT MACHINE***","msg"=>"slot machine is broken!")));
+//     if($user['ltv']<10) die(json_encode(array("title"=>"***SLOT MACHINE***","msg"=>"slot machine is broken!")));
      $spinleft=10-$user['tracking']-1;
      for($i=1;$i<4;$i++){
        $row="";
@@ -127,7 +127,7 @@ if(stripos($msg, 'addfriend')!==FALSE){
    $amsg="$fromname added you as a friend!";
    $imsg="reply 'addfriend' to friend back";
    apnsUser($to,$amsg,$imsg);   
-   die(json_encode(array("title"=>"done","msg"=>"$friendname has been added as your friend for 30 XP!")));
+   die(json_encode(array("title"=>"done","msg"=>"$friendname has been added as your friend for 3 XP!")));
  }else{
     die(json_encode(array("title"=>"done","msg"=>"You already friended him/her before.")));
  }

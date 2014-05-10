@@ -8,10 +8,10 @@ $showslot=$user['tracking']<11;
 $showslot=0;
 
 $slot=array("From"=>"The Slot Machine","msg"=>"reply 'spin' to play Slots!\nNo purchase necessary. Play 10 times a day FREE. Reply 'terms' for Terms and Conditions.","msg_id"=>3,"from_uid"=>2902,"readmsg"=>!$showslot);
-if($user['ltv']>10) $ret[]=$slot;
+if($user['ltv']>10 || true) $ret[]=$slot;
 
 $pigeon=array("From"=>"The Pigeon Machine","msg"=>"put @username to msg anyone!","readmsg"=>1,"from_uid"=>2902,"msg_id"=>5);
-if($user['visit_count']>10) $ret[]=$pigeon;
+//if($user['visit_count']>10) $ret[]=$pigeon;
 
 if($user['visit_count']>10 && $user['visit_count']<100){
  require_once("/var/www/html/pr/levels.php");
@@ -21,13 +21,13 @@ if($user['visit_count']>10 && $user['visit_count']<100){
  $max=$agentXpinfo['maxbonus'];
  $msg="Invite a friend with the direct link: \n$url\n Or enter bonus code '".$user['username']."'\n\nEarn $min to $max Points as soon as joiners accumulate 100 points. Earn more XP to make your bonus code more powerful.";
  $news=array("From"=>"***New feature***","msg"=>$msg, "readmsg"=>1,"from_uid"=>2902,"msg_id"=>6);
- $ret[]=$news;
+ //$ret[]=$news;
 }
 
 if($user['ltv']<120){
  $newbie=$user['visit_count']<5;
- $ret[]=array("From"=>"How it works","msg"=>"***How it works****\n1.Click on a picture topic from 'Earn points'.\n2. Learn more about the topic by trying it out. \n3.Take a screenshot from within the app.\n4.It can take up to 2 hours to confirm your eligibility. We will send u a notification asap. \n5.Share the screenshot on PhotoRewards to earn points",
- "readmsg"=>!$newbie,"from_uid"=>2902,"msg_id"=>10);
+// $ret[]=array("From"=>"How it works","msg"=>"***How it works****\n1.Click on a picture topic from 'Earn points'.\n2. Learn more about the topic by trying it out. \n3.Take a screenshot from within the app.\n4.It can take up to 2 hours to confirm your eligibility. We will send u a notification asap. \n5.Share the screenshot on PhotoRewards to earn points",
+// "readmsg"=>!$newbie,"from_uid"=>2902,"msg_id"=>10);
 }
 
 $limit=20;
@@ -53,7 +53,7 @@ foreach($inbox as $m){
  if($m['fbid']) $box['fbid']=$m['fbid'];
  $ret[]=$box;
 }
- $box=array("From"=>"SuperAdmin","msg"=>"Welcome to PhotoRewards! Message me or txt 650-804-6836 if you have any questions!","from_uid"=>2902,"msg_id"=>1,"readmsg"=>1);
+ $box=array("From"=>"SuperAdmin","msg"=>"Welcome to PhotoRewards! Please reply with a short sentence on how you found this app! Message me or txt 650-804-6836 if you have any questions!","from_uid"=>2902,"msg_id"=>1,"readmsg"=>1);
  $ret[]=$box;
 
 if($user['ltv']>0){

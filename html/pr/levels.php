@@ -47,13 +47,13 @@ $levelmax=array(
 12=>9500,
 );
 
-$multiplier=1.6;
+$multiplier=2;
 
 function getBonusPoints($myxp,$country='US'){
  global $xplevel, $levelminbonus, $levelmax,$multiplier;
  if(!$multiplier) $multiplier=1;
  if($country!='US' && $country!='CA' && $country!='GB' && $country!='AU' && $country!='NZ') $multiplier=0.7;
- if($country=='VN') $multiplier=0.4;
+ if($country=='VN') $multiplier=0.3;
 
  $mylevel=0;
  $nexttlevel=0;
@@ -66,8 +66,8 @@ function getBonusPoints($myxp,$country='US'){
         $tnl=(double)($myxp-$lastlevelxp);
         $levelxptotal=(double)($lxp-$lastlevelxp);
 	$tnl_percent=$tnl/$levelxptotal*100;
-        $nextmin=$levelminbonus[$nextlevel]*$multiplier;
-	$nextmax=$levelmax[$nextlevel]*$multiplier;
+        $nextmin=intval($levelminbonus[$nextlevel]*$multiplier);
+	$nextmax=intval($levelmax[$nextlevel]*$multiplier);
         break;
    }
    $mylevel=$level;

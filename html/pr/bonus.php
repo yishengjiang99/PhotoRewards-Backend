@@ -34,6 +34,7 @@ $mac=$_REQUEST['mac'];
 if($mac=='ios7device'){
  $usercnt=db::row("select count(1) as cnt from appuser where app='picrewards' and idfa='$idfa'");
 }else{
+//  die(json_encode(array("title"=>"Sorry","msg"=>"Please upgrade to iOS 7")));
  $usercnt=db::row("select count(1) as cnt from appuser where app='picrewards' and mac='$mac'");
 }
 
@@ -43,16 +44,16 @@ if($usercnt['cnt']>4 && $uid!=2902){
 
 $tokens=db::row("select * from pushtoken where uid=$uid");
 if(!$token){
-// die(json_encode(array("title"=>"Sorry","msg"=>"Bonus code hit daily limit")));
+// die(json_encode(array("title"=>"Sorry","msg"=>"Bonus code hit daily limit..")));
 }
 
 $ipaddress=getRealIP();
 $ipcnt=db::row("select count(1) as cnt from appuser where app='picrewards' and has_entered_bonus=1 and ipaddress='$ipaddress'");
-if($ipcnt['cnt']>10){
+if($ipcnt['cnt']>5){
  die(json_encode(array("title"=>"Sorry","msg"=>"Bonus code hit daily limit")));
 }
 
-if($agent['id']==9329 || $agent['id']==17035){
+if($agent['id']==9329 || $agent['id']==17035 || $user['locale']=='vi_VN'){
  die(json_encode(array("title"=>"Sorry","msg"=>"Bonus code hit daily limit")));
 }
 
@@ -76,7 +77,6 @@ $append="";
 if($user['stars']<100 && $admin==0 && $user['ltv']<50){
  $reached100=0;
  die(json_encode(array("title"=>"","msg"=>"You must accumulate at least 100 points to enter a bonus code")));
-
 // $append="\n\n'".$code."' will receive his bonus automatically after you have accumulated 100 additional points\n";
 }
 
@@ -88,12 +88,13 @@ if($deviceInfo=='iPod; |5_1_1' || $deviceInfo=='iPod; |5_0_1'){
 
 $device="iphone";
 if(stripos($deviceInfo,"ipod")!==false){
-   die(json_encode(array("title"=>"Oh no!","msg"=>"Device not eligible")));
+  // die(json_encode(array("title"=>"Oh no!","msg"=>"Device not eligible")));
  $device='ipod';
 }
 if(stripos($deviceInfo,"ipad")!==false){
  $device='ipad';
 }
+
 $joinername=$usercode;
 if($user['has_entered_bonus']>0){
  die(json_encode(array("title"=>"Oh no!","msg"=>"You had already entered a bonus code.\n\nTell your friends to enter your bonus code '$usercode' for even more points!")));
@@ -177,5 +178,6 @@ $usercode=$user['username'];
  if($reached100==1 && $banned==0) {
     apnsUser($agentUid,"$joinerNickname entered your bonus code '$code' for $bonus points!","");
  }
+
 die(json_encode(array("title"=>"You win!","msg"=>"You received $points_to_joineer extra points for entering the bonus code '$code'.$append\nTell your friends to enter your bonus code '$usercode' for even more points!")));
 
