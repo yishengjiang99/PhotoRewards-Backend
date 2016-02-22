@@ -1,8 +1,7 @@
 <?php
 require_once("/var/www/lib/functions.php");
 //prod keys
-$key='AKIAIXNUAUZ6JDD6K4SQ';
-$secret='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';
+
 //sandbox
 //$key='AKIAIN6IE7B7ZSXWRPDQ';
 //$secret='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';
