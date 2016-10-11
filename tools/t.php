@@ -1,16 +1,5 @@
 <?php
 
-require_once('/var/www/html/pr/apns.php');
-for($i=0;$i<100;$i++){
-_apnshUser(2902,'dd*()','(()','ddd');
-}
-exit;
-if($row=db::row("select * from appuser where id=200002")){
-echo 'yes';
-}
-exit;
-apnsUser(3756,"You discovered a bug and got a free giftcard!! Happy birthday!","");
-exit;
 $ch=curl_init();
 for($i=1;$i<5;$i++){
         $url="http://www.xoxohth.com/main.php?forum_id=2&p=$i";
